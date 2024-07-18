@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import openpyxl 
 
 # Function to load Excel data
 @st.cache_data  # Updated cache decorator
