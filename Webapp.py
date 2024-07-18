@@ -1,26 +1,42 @@
 import streamlit as st
 import pandas as pd
-import openpyxl 
+import openpyxl
 
 # Function to load Excel data
-@st.cache_data  # Updated cache decorator
+@st.cache_data
 def load_data(file):
-    return pd.read_excel(file)
+    df = pd.read_excel(file)
+    return df
 
 # Function to save data back to Excel
 def save_data(data, file):
     data.to_excel(file, index=False)
 
+def clean_data(df):
+    # Inspect data types
+    st.write("Data Types:")
+    st.write(df.dtypes)
+
+    # Convert problematic columns to string or appropriate types
+    for col in df.columns:
+        if df[col].dtype == 'object':
+            df[col] = df[col].astype(str)
+        elif df[col].dtype == 'int64':
+            df[col] = df[col].astype('float64')  # Example conversion
+
+    return df
+
 def main():
-    st.title('Excel Data Entry and Retrieval')
+    st.title("Excel Data Loader")
 
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
-    uploaded_file = st.sidebar.file_uploader("Upload your Excel file", type=["xlsx"])
-
+    uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
     if uploaded_file is not None:
-        # Load data from uploaded file
         df = load_data(uploaded_file)
+        df = clean_data(df)
+        
+        st.write("Filtered Data:")
 
         # Show the current data in a table
         st.write('Current Data:')
@@ -43,8 +59,10 @@ def main():
         st.write('Filter data:')
         filter_col = st.selectbox('Select column for filter:', options=df.columns)
         filter_value = st.text_input(f'Enter value to filter {filter_col}:')
+
+        # Filter the DataFrame
         filtered_df = df[df[filter_col] == filter_value]
         st.write(filtered_df)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
