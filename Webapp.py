@@ -15,25 +15,6 @@ def save_data(data):
         data.to_excel(tmp.name, index=False)
         return tmp.name
 
-def clean_data(df):
-    # Inspect data types
-    st.write("Data Types before cleaning:")
-    st.write(df.dtypes)
-
-    # Convert problematic columns to string or appropriate types
-    for col in df.columns:
-        if df[col].dtype == 'object':
-            df[col] = df[col].astype(str)
-        elif df[col].dtype == 'int64':
-            df[col] = df[col].astype('float64')  # Example conversion
-        elif df[col].dtype == 'float64':
-            df[col] = df[col].astype('str')
-
-    st.write("Data Types after cleaning:")
-    st.write(df.dtypes)
-    
-    return df
-
 def main():
     st.title("Excel Data Loader")
 
