@@ -15,6 +15,11 @@ def save_data(data):
         data.to_excel(tmp.name, index=False)
         return tmp.name
 
+def clean_data(df):
+    # Convert all columns to string type to handle mixed types
+    df = df.astype(str)
+    return df
+
 def main():
     st.title("Excel Data Loader")
 
@@ -23,6 +28,7 @@ def main():
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
     if uploaded_file is not None:
         df = load_data(uploaded_file)
+        df = clean_data(df)
         
         st.write("Filtered Data:")
 
