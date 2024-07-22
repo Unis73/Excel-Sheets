@@ -23,6 +23,16 @@ def clean_data(df):
 def main():
     st.title("Excel Data Loader")
 
+    # Hide Streamlit style
+    hide_streamlit_style = """
+        <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        </style>
+    """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
