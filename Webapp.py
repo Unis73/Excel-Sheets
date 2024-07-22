@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import openpyxl
 import tempfile
-import os
 
 # Function to load Excel data
 @st.cache_data
@@ -18,7 +17,7 @@ def save_data(data):
 
 def clean_data(df):
     # Inspect data types
-    st.write("Data Types:")
+    st.write("Data Types before cleaning:")
     st.write(df.dtypes)
 
     # Convert problematic columns to string or appropriate types
@@ -27,7 +26,12 @@ def clean_data(df):
             df[col] = df[col].astype(str)
         elif df[col].dtype == 'int64':
             df[col] = df[col].astype('float64')  # Example conversion
+        elif df[col].dtype == 'float64':
+            df[col] = df[col].astype('str')
 
+    st.write("Data Types after cleaning:")
+    st.write(df.dtypes)
+    
     return df
 
 def main():
@@ -66,8 +70,9 @@ def main():
         filter_value = st.text_input(f'Enter value to filter {filter_col}:')
 
         # Filter the DataFrame
-        filtered_df = df[df[filter_col] == filter_value]
-        st.write(filtered_df)
+        if filter_value:
+            filtered_df = df[df[filter_col] == filter_value]
+            st.write(filtered_df)
 
 if __name__ == "__main__":
     main()
