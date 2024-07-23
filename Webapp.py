@@ -19,7 +19,7 @@ def clean_data(df):
     return df
 
 def main():
-    st.title("Excel Data Loader")
+    st.title("Excel Data")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
@@ -47,8 +47,6 @@ def main():
         df = load_data(st.session_state.file_path)
         df = clean_data(df)
         st.session_state.df = df
-
-        st.write("Filtered Data:")
 
         # Show the current data in a table
         st.write('Current Data:')
