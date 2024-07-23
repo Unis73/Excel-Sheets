@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import openpyxl
 import tempfile
-import os
 
 # Function to load Excel data
 @st.cache_data
@@ -39,6 +38,7 @@ def main():
     st.sidebar.title('Data Entry')
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
     if uploaded_file is not None:
+        # Load and clean data
         df = load_data(uploaded_file)
         df = clean_data(df)
 
@@ -46,7 +46,8 @@ def main():
 
         # Show the current data in a table
         st.write('Current Data:')
-        st.write(df)
+        data_placeholder = st.empty()
+        data_placeholder.write(df)
 
         # Data entry form
         st.sidebar.header('Enter New Data')
@@ -67,6 +68,9 @@ def main():
             save_data(df, temp_file_path)
             st.sidebar.success('Data added successfully!')
             st.sidebar.markdown(f"[Download updated file](file://{temp_file_path})")
+
+            # Refresh the displayed DataFrame
+            data_placeholder.write(df)
 
         # Filter and display data
         st.header('Retrieve Data')
