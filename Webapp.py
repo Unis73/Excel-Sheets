@@ -60,8 +60,9 @@ def main():
         new_data = {}
         for col in df.columns:
             if df[col].dtype == 'object' and df[col].nunique() > 1 and df[col].nunique() < len(df) * 0.5:
-                unique_values = df[col].unique().tolist()
-                selected_value = st.sidebar.selectbox(f"Select {col}", options=[""] + unique_values, key=f"{col}_dropdown")
+                unique_values = pd.Series(df[col].unique()).str.lower().unique()
+                unique_values_display = df[col].str.lower().unique()
+                selected_value = st.sidebar.selectbox(f"Select {col}", options=[""] + unique_values_display.tolist(), key=f"{col}_dropdown")
                 if selected_value == "":
                     new_data[col] = st.sidebar.text_input(f"Enter new {col}", key=f"{col}_input")
                 else:
