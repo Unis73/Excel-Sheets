@@ -105,5 +105,9 @@ def main():
                     filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
             st.write(filtered_df)
 
+        # Provide a download link for the updated file
+        with open(st.session_state.file_path, 'rb') as f:
+            st.download_button('Download updated file', f, file_name='updated_file.xlsx')
+
 if __name__ == "__main__":
     main()
