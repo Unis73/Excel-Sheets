@@ -13,10 +13,9 @@ def load_data(file_path):
 def save_data(data, file_path):
     data.to_excel(file_path, index=False)
 
+# Function to clean data
 def clean_data(df):
-    # Convert all columns to string type to handle mixed types
     df = df.astype(str)
-    # Fill NaN values with 'NA'
     df = df.fillna('NA')
     return df
 
@@ -45,7 +44,7 @@ def main():
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.file_path = temp_file.name
-        
+
         df = load_data(st.session_state.file_path)
         df = clean_data(df)
         st.session_state.df = df
@@ -61,7 +60,11 @@ def main():
         st.sidebar.header('Enter New Data')
         new_data = {}
         for col in df.columns:
-            new_data[col] = st.sidebar.text_input(col, key=col)
+            unique_values = df[col].unique().tolist()
+            if len(unique_values) > 1:
+                new_data[col] = st.sidebar.selectbox(f"Select or enter {col}", options=unique_values, key=f"{col}_dropdown")
+            else:
+                new_data[col] = st.sidebar.text_input(f"Enter {col}", key=f"{col}_input")
 
         # Button to add new data
         if st.sidebar.button('Add Data'):
