@@ -19,7 +19,7 @@ def clean_data(df):
     return df
 
 def main():
-    st.title("Excel Data Loader")
+    st.title("Excel Data")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
@@ -48,8 +48,6 @@ def main():
         df = clean_data(df)
         st.session_state.df = df
 
-        st.write("Filtered Data:")
-
         # Show the current data in a table
         st.write('Current Data:')
         data_placeholder = st.empty()
@@ -61,18 +59,31 @@ def main():
         for col in df.columns:
             if df[col].dtype == 'object' and df[col].nunique() > 1 and df[col].nunique() < len(df) * 0.5:
                 unique_values = pd.Series(df[col].unique()).str.lower().unique()
-                
-                # Dropdown with existing values
-                selected_value = st.sidebar.selectbox(f"Select {col}", options=[""] + unique_values.tolist(), key=f"{col}_dropdown")
-                
-                # Text input for new data
-                new_entry = st.sidebar.text_input(f"Enter new {col} (if not listed)", key=f"{col}_input")
-                
-                # Determine final value
+
+                # Text input for new or existing values
+                user_input = st.sidebar.text_input(
+                    f"Enter or select {col}",
+                    key=f"{col}_input",
+                    placeholder=f"Type or select {col}",
+                )
+
+                # Dropdown with existing values for suggestions
+                if user_input.lower() not in unique_values:
+                    suggestions = [""] + unique_values.tolist()
+                else:
+                    suggestions = unique_values.tolist()
+
+                selected_value = st.sidebar.selectbox(
+                    f"Select {col} (optional)",
+                    options=suggestions,
+                    key=f"{col}_dropdown"
+                )
+
+                # Determine the final value
                 if selected_value:
                     new_data[col] = selected_value
-                elif new_entry:
-                    new_data[col] = new_entry
+                elif user_input:
+                    new_data[col] = user_input
                 else:
                     new_data[col] = 'NA'
             else:
