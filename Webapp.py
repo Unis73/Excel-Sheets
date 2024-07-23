@@ -21,7 +21,7 @@ def clean_data(df):
     return df
 
 def main():
-    st.title("Excel Data Loader")
+    st.title("Excel Data")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
@@ -51,8 +51,6 @@ def main():
                 temp_file.write(uploaded_file.getbuffer())
         else:
             df = st.session_state.df
-
-        st.write("Filtered Data:")
 
         # Show the current data in a table
         st.write('Current Data:')
