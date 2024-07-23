@@ -37,10 +37,15 @@ def main():
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
+
     if uploaded_file is not None:
-        # Load and clean data
-        df = load_data(uploaded_file)
-        df = clean_data(df)
+        if 'df' not in st.session_state:
+            # Load and clean data only if it's not already loaded
+            df = load_data(uploaded_file)
+            df = clean_data(df)
+            st.session_state.df = df
+        else:
+            df = st.session_state.df
 
         st.write("Filtered Data:")
 
@@ -53,12 +58,13 @@ def main():
         st.sidebar.header('Enter New Data')
         new_data = {}
         for col in df.columns:
-            new_data[col] = st.sidebar.text_input(col)
+            new_data[col] = st.sidebar.text_input(col, key=col)
 
         # Button to add new data
         if st.sidebar.button('Add Data'):
             new_data_df = pd.DataFrame([new_data])
             df = pd.concat([df, new_data_df], ignore_index=True)
+            st.session_state.df = df
 
             # Save data back to the uploaded file path
             temp_file_path = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx").name
