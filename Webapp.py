@@ -61,7 +61,11 @@ def main():
         for col in df.columns:
             if df[col].dtype == 'object' and df[col].nunique() > 1 and df[col].nunique() < len(df) * 0.5:
                 unique_values = df[col].unique().tolist()
-                new_data[col] = st.sidebar.selectbox(f"Select or enter {col}", options=unique_values, key=f"{col}_dropdown")
+                selected_value = st.sidebar.selectbox(f"Select {col}", options=[""] + unique_values, key=f"{col}_dropdown")
+                if selected_value == "":
+                    new_data[col] = st.sidebar.text_input(f"Enter new {col}", key=f"{col}_input")
+                else:
+                    new_data[col] = selected_value
             else:
                 new_data[col] = st.sidebar.text_input(f"Enter {col}", key=f"{col}_input")
 
