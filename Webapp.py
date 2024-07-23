@@ -15,12 +15,11 @@ def save_data(data, file_path):
 
 # Function to clean data
 def clean_data(df):
-    df = df.astype(str)
-    df = df.fillna('NA')
+    df = df.fillna('NA').astype(str)
     return df
 
 def main():
-    st.title("Excel Data")
+    st.title("Excel Data Loader")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
