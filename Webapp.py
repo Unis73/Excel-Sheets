@@ -20,7 +20,7 @@ def clean_data(df):
     return df
 
 def main():
-    st.title("Excel Data Loader")
+    st.title("Excel Data")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
