@@ -83,12 +83,18 @@ def main():
         # Filter and display data
         st.header('Retrieve Data')
         st.write('Filter data:')
-        filter_col = st.selectbox('Select column for filter:', options=df.columns)
-        filter_value = st.text_input(f'Enter value to filter {filter_col}:')
+        filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
+        
+        filter_values = {}
+        for col in filter_cols:
+            filter_values[col] = st.text_input(f'Enter value to filter {col}:')
 
-        # Filter the DataFrame (case-insensitive)
-        if filter_value:
-            filtered_df = df[df[filter_col].str.lower() == filter_value.lower()]
+        # Filter the DataFrame based on multiple conditions
+        if filter_values:
+            filtered_df = df.copy()
+            for col, value in filter_values.items():
+                if value:
+                    filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
             st.write(filtered_df)
 
         # Provide a download link for the updated file
