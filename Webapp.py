@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import openpyxl
 import tempfile
+import os
 
 # Function to load Excel data
 @st.cache_data
@@ -47,6 +48,7 @@ def main():
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.file_path = temp_file.name
+                st.sidebar.write(f"File path: {st.session_state.file_path}")
 
         df = load_data(st.session_state.file_path)
         df = clean_data(df)
@@ -84,6 +86,7 @@ def main():
             # Save data back to the original file path
             save_data(df, st.session_state.file_path)
             st.sidebar.success('Data added successfully!')
+            st.sidebar.write(f"Saved to file path: {st.session_state.file_path}")
 
             # Refresh the displayed DataFrame
             data_placeholder.write(df)
