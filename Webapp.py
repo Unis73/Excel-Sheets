@@ -48,7 +48,6 @@ def main():
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.file_path = temp_file.name
-                st.sidebar.write(f"File path: {st.session_state.file_path}")
 
         df = load_data(st.session_state.file_path)
         df = clean_data(df)
