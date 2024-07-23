@@ -86,7 +86,6 @@ def main():
             # Save data back to the original file path
             save_data(df, st.session_state.file_path)
             st.sidebar.success('Data added successfully!')
-            st.sidebar.write(f"Saved to file path: {st.session_state.file_path}")
 
             # Refresh the displayed DataFrame
             data_placeholder.write(df)
