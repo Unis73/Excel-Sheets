@@ -61,13 +61,18 @@ def main():
         for col in df.columns:
             if df[col].dtype == 'object' and df[col].nunique() > 1 and df[col].nunique() < len(df) * 0.5:
                 unique_values = pd.Series(df[col].unique()).str.lower().unique()
-                user_input = st.sidebar.text_input(f"Enter or select {col}", key=f"{col}_input", placeholder=f"Type or select {col}")
-
-                if user_input:
-                    if user_input.lower() not in unique_values:
-                        unique_values = list(unique_values) + [user_input.lower()]
-
-                    new_data[col] = user_input
+                
+                # Dropdown with existing values
+                selected_value = st.sidebar.selectbox(f"Select {col}", options=[""] + unique_values.tolist(), key=f"{col}_dropdown")
+                
+                # Text input for new data
+                new_entry = st.sidebar.text_input(f"Enter new {col} (if not listed)", key=f"{col}_input")
+                
+                # Determine final value
+                if selected_value:
+                    new_data[col] = selected_value
+                elif new_entry:
+                    new_data[col] = new_entry
                 else:
                     new_data[col] = 'NA'
             else:
