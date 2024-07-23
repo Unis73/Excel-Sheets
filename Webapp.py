@@ -10,9 +10,8 @@ def load_data(file):
     return df
 
 # Function to save data back to Excel
-def save_data(data, file_path):
-    with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
-        data.to_excel(writer, index=False)
+def save_data(data, file):
+    data.to_excel(file, index=False)
 
 def clean_data(df):
     # Convert all columns to string type to handle mixed types
@@ -44,6 +43,10 @@ def main():
             df = load_data(uploaded_file)
             df = clean_data(df)
             st.session_state.df = df
+            # Save original file path in session state
+            st.session_state.file_path = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx").name
+            with open(st.session_state.file_path, 'wb') as temp_file:
+                temp_file.write(uploaded_file.getbuffer())
         else:
             df = st.session_state.df
 
@@ -67,13 +70,8 @@ def main():
             st.session_state.df = df
 
             # Save data back to the uploaded file path
-            temp_file_path = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx").name
-            with open(temp_file_path, 'wb') as temp_file:
-                temp_file.write(uploaded_file.getbuffer())
-
-            save_data(df, temp_file_path)
+            save_data(df, st.session_state.file_path)
             st.sidebar.success('Data added successfully!')
-            st.sidebar.markdown(f"[Download updated file](file://{temp_file_path})")
 
             # Refresh the displayed DataFrame
             data_placeholder.write(df)
