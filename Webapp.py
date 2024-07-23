@@ -56,7 +56,8 @@ def main():
 
         # Button to add new data
         if st.sidebar.button('Add Data'):
-            df = df.append(new_data, ignore_index=True)
+            new_data_df = pd.DataFrame([new_data])
+            df = pd.concat([df, new_data_df], ignore_index=True)
             file_path = save_data(df)
             st.sidebar.success('Data added successfully!')
             st.sidebar.markdown(f"[Download updated file](file://{file_path})")
