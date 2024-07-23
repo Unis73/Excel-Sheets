@@ -59,7 +59,7 @@ def main():
         st.sidebar.header('Enter New Data')
         new_data = {}
         for col in df.columns:
-            # Check if the column contains only text (non-numeric) values
+            # Check if the column contains only text values
             if df[col].apply(lambda x: isinstance(x, str)).all():
                 # If purely text values are present, use dropdown
                 unique_values = df[col].unique().tolist()
@@ -69,7 +69,7 @@ def main():
                     key=f"{col}_dropdown"
                 )
             else:
-                # If column contains numeric or mixed values, use text input
+                # For non-text columns (numeric, mixed), use text input
                 new_data[col] = st.sidebar.text_input(f"Enter {col}", key=f"{col}_input")
 
         # Button to add new data
