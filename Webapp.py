@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import openpyxl
 import tempfile
+import os
 
 # Function to load Excel data
 @st.cache_data
@@ -10,8 +11,8 @@ def load_data(file):
     return df
 
 # Function to save data back to Excel
-def save_data(data, file):
-    data.to_excel(file, index=False)
+def save_data(data, file_path):
+    data.to_excel(file_path, index=False)
 
 def clean_data(df):
     # Convert all columns to string type to handle mixed types
@@ -69,7 +70,7 @@ def main():
             df = pd.concat([df, new_data_df], ignore_index=True)
             st.session_state.df = df
 
-            # Save data back to the uploaded file path
+            # Save data back to the temporary file path
             save_data(df, st.session_state.file_path)
             st.sidebar.success('Data added successfully!')
 
@@ -86,6 +87,10 @@ def main():
         if filter_value:
             filtered_df = df[df[filter_col] == filter_value]
             st.write(filtered_df)
+
+        # Provide a download link for the updated file
+        with open(st.session_state.file_path, 'rb') as f:
+            st.download_button('Download updated file', f, file_name='updated_file.xlsx')
 
 if __name__ == "__main__":
     main()
