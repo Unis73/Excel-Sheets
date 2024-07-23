@@ -19,7 +19,7 @@ def clean_data(df):
     return df
 
 def main():
-    st.title("Excel Data")
+    st.title("Excel Data Loader")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
@@ -48,6 +48,8 @@ def main():
         df = clean_data(df)
         st.session_state.df = df
 
+        st.write("Filtered Data:")
+
         # Show the current data in a table
         st.write('Current Data:')
         data_placeholder = st.empty()
@@ -58,13 +60,8 @@ def main():
         new_data = {}
         for col in df.columns:
             if df[col].dtype == 'object' and df[col].nunique() > 1 and df[col].nunique() < len(df) * 0.5:
-                unique_values = pd.Series(df[col].unique()).str.lower().unique()
-                unique_values_display = df[col].str.lower().unique()
-                selected_value = st.sidebar.selectbox(f"Select {col}", options=[""] + unique_values_display.tolist(), key=f"{col}_dropdown")
-                if selected_value == "":
-                    new_data[col] = st.sidebar.text_input(f"Enter new {col}", key=f"{col}_input")
-                else:
-                    new_data[col] = selected_value
+                unique_values = df[col].unique().tolist()
+                new_data[col] = st.sidebar.selectbox(f"Select or enter {col}", options=unique_values, key=f"{col}_dropdown")
             else:
                 new_data[col] = st.sidebar.text_input(f"Enter {col}", key=f"{col}_input")
 
