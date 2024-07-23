@@ -5,8 +5,8 @@ import tempfile
 
 # Function to load Excel data
 @st.cache_data
-def load_data(file):
-    df = pd.read_excel(file)
+def load_data(file_path):
+    df = pd.read_excel(file_path)
     return df
 
 # Function to save data back to Excel
@@ -40,17 +40,15 @@ def main():
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
-        if 'df' not in st.session_state:
-            # Load and clean data only if it's not already loaded
-            df = load_data(uploaded_file)
-            df = clean_data(df)
-            st.session_state.df = df
-            # Save original file path in session state
-            st.session_state.file_path = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx").name
-            with open(st.session_state.file_path, 'wb') as temp_file:
+        if 'file_path' not in st.session_state:
+            # Save uploaded file to a temporary file path
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
-        else:
-            df = st.session_state.df
+                st.session_state.file_path = temp_file.name
+        
+        df = load_data(st.session_state.file_path)
+        df = clean_data(df)
+        st.session_state.df = df
 
         st.write("Filtered Data:")
 
@@ -73,7 +71,7 @@ def main():
             df = clean_data(df)
             st.session_state.df = df
 
-            # Save data back to the temporary file path
+            # Save data back to the original file path
             save_data(df, st.session_state.file_path)
             st.sidebar.success('Data added successfully!')
 
@@ -96,10 +94,6 @@ def main():
                 if value:
                     filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
             st.write(filtered_df)
-
-        # Provide a download link for the updated file
-        with open(st.session_state.file_path, 'rb') as f:
-            st.download_button('Download updated file', f, file_name='updated_file.xlsx')
 
 if __name__ == "__main__":
     main()
