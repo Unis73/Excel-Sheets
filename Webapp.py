@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import openpyxl
 import tempfile
-import os
 
 # Function to load Excel data
 @st.cache_data
@@ -17,6 +16,8 @@ def save_data(data, file_path):
 def clean_data(df):
     # Convert all columns to string type to handle mixed types
     df = df.astype(str)
+    # Fill NaN values with 'NA'
+    df = df.fillna('NA')
     return df
 
 def main():
@@ -66,8 +67,10 @@ def main():
 
         # Button to add new data
         if st.sidebar.button('Add Data'):
+            new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
             new_data_df = pd.DataFrame([new_data])
             df = pd.concat([df, new_data_df], ignore_index=True)
+            df = clean_data(df)
             st.session_state.df = df
 
             # Save data back to the temporary file path
