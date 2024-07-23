@@ -23,7 +23,7 @@ def is_pure_text_column(series):
     return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
 
 def main():
-    st.title("Excel Data Loader")
+    st.title("Excel Data")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
@@ -52,8 +52,6 @@ def main():
         df = clean_data(df)
         st.session_state.df = df
 
-        st.write("Filtered Data:")
-
         # Show the current data in a table
         st.write('Current Data:')
         data_placeholder = st.empty()
@@ -73,7 +71,7 @@ def main():
                 )
             else:
                 # If column contains numbers or mixed data, use text input
-                new_data[col] = st.sidebar.text_input(f"Enter {col}", key=f"{col}_input")
+                new_data[col] = st.sidebar.text_input(f"{col}", key=f"{col}_input")
 
         # Button to add new data
         if st.sidebar.button('Add Data'):
@@ -92,7 +90,6 @@ def main():
 
         # Filter and display data
         st.header('Retrieve Data')
-        st.write('Filter data:')
         filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
         
         filter_values = {}
