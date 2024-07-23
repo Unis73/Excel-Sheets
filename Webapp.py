@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import openpyxl
 import tempfile
+import os
 
 # Function to load Excel data
 @st.cache_data
@@ -10,10 +11,9 @@ def load_data(file):
     return df
 
 # Function to save data back to Excel
-def save_data(data):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
-        data.to_excel(tmp.name, index=False)
-        return tmp.name
+def save_data(data, file_path):
+    with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+        data.to_excel(writer, index=False)
 
 def clean_data(df):
     # Convert all columns to string type to handle mixed types
@@ -21,7 +21,7 @@ def clean_data(df):
     return df
 
 def main():
-    st.title("Excel Data")
+    st.title("Excel Data Loader")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
@@ -42,6 +42,8 @@ def main():
         df = load_data(uploaded_file)
         df = clean_data(df)
 
+        st.write("Filtered Data:")
+
         # Show the current data in a table
         st.write('Current Data:')
         st.write(df)
@@ -56,9 +58,15 @@ def main():
         if st.sidebar.button('Add Data'):
             new_data_df = pd.DataFrame([new_data])
             df = pd.concat([df, new_data_df], ignore_index=True)
-            file_path = save_data(df)
+
+            # Save data back to the uploaded file path
+            temp_file_path = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx").name
+            with open(temp_file_path, 'wb') as temp_file:
+                temp_file.write(uploaded_file.getbuffer())
+
+            save_data(df, temp_file_path)
             st.sidebar.success('Data added successfully!')
-            st.sidebar.markdown(f"[Download updated file](file://{file_path})")
+            st.sidebar.markdown(f"[Download updated file](file://{temp_file_path})")
 
         # Filter and display data
         st.header('Retrieve Data')
