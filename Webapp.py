@@ -18,8 +18,12 @@ def clean_data(df):
     df = df.fillna('NA').astype(str)
     return df
 
+def is_pure_text_column(series):
+    # Check if the series contains only text and no numbers
+    return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
+
 def main():
-    st.title("Excel Data")
+    st.title("Excel Data Loader")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
@@ -48,6 +52,8 @@ def main():
         df = clean_data(df)
         st.session_state.df = df
 
+        st.write("Filtered Data:")
+
         # Show the current data in a table
         st.write('Current Data:')
         data_placeholder = st.empty()
@@ -57,9 +63,8 @@ def main():
         st.sidebar.header('Enter New Data')
         new_data = {}
         for col in df.columns:
-            # Check if the column contains only text values
-            if df[col].apply(lambda x: isinstance(x, str)).all():
-                # If purely text values are present, use dropdown
+            if is_pure_text_column(df[col]):
+                # If column contains only text values with no numbers, use dropdown
                 unique_values = df[col].unique().tolist()
                 new_data[col] = st.sidebar.selectbox(
                     f"Select or enter {col}",
@@ -67,7 +72,7 @@ def main():
                     key=f"{col}_dropdown"
                 )
             else:
-                # For non-text columns (numeric, mixed), use text input
+                # If column contains numbers or mixed data, use text input
                 new_data[col] = st.sidebar.text_input(f"Enter {col}", key=f"{col}_input")
 
         # Button to add new data
