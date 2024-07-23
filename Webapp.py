@@ -59,11 +59,14 @@ def main():
         st.sidebar.header('Enter New Data')
         new_data = {}
         for col in df.columns:
-            if df[col].dtype == 'object' and df[col].nunique() > 1 and df[col].nunique() < len(df) * 0.5:
-                unique_values = df[col].unique().tolist()
-                new_data[col] = st.sidebar.selectbox(f"Select or enter {col}", options=unique_values, key=f"{col}_dropdown")
-            else:
+            # Check if the column contains numeric values
+            if pd.to_numeric(df[col], errors='coerce').notnull().any():
+                # If numeric values are present, use text input
                 new_data[col] = st.sidebar.text_input(f"Enter {col}", key=f"{col}_input")
+            else:
+                # If only text values are present, use dropdown
+                unique_values = df[col].unique().tolist()
+                new_data[col] = st.sidebar.selectbox(f"Select or enter {col}", options=[""] + unique_values, key=f"{col}_dropdown")
 
         # Button to add new data
         if st.sidebar.button('Add Data'):
