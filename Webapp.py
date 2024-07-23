@@ -21,7 +21,7 @@ def clean_data(df):
     return df
 
 def main():
-    st.title("Excel Data")
+    st.title("Excel Data Loader")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
@@ -51,6 +51,8 @@ def main():
                 temp_file.write(uploaded_file.getbuffer())
         else:
             df = st.session_state.df
+
+        st.write("Filtered Data:")
 
         # Show the current data in a table
         st.write('Current Data:')
@@ -84,9 +86,9 @@ def main():
         filter_col = st.selectbox('Select column for filter:', options=df.columns)
         filter_value = st.text_input(f'Enter value to filter {filter_col}:')
 
-        # Filter the DataFrame
+        # Filter the DataFrame (case-insensitive)
         if filter_value:
-            filtered_df = df[df[filter_col] == filter_value]
+            filtered_df = df[df[filter_col].str.lower() == filter_value.lower()]
             st.write(filtered_df)
 
         # Provide a download link for the updated file
