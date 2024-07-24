@@ -123,10 +123,6 @@ def main():
             if value:
                 filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
 
-        # Display filtered data
-        st.write('Filtered Data:')
-        st.write(filtered_df)
-
         # Download filtered data
         if not filtered_df.empty:
             buffer = io.BytesIO()
