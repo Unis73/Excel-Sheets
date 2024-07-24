@@ -44,12 +44,12 @@ def main():
         else:
             df = st.session_state.df
 
-        # Data entry form in the sidebar
-        st.sidebar.header('Enter New Data')
-
         # Initialize form data if not present
         if 'form_data' not in st.session_state:
             st.session_state.form_data = {col: '' for col in df.columns}
+
+        # Sidebar form fields
+        st.sidebar.header('Enter New Data')
 
         new_data = {}
         for col in df.columns:
@@ -62,9 +62,13 @@ def main():
                     index=unique_values.index(st.session_state.form_data.get(col, '')) if st.session_state.form_data.get(col, '') in unique_values else 0
                 )
             else:
-                new_data[col] = st.sidebar.text_input(f"{col}", key=f"{col}_input", value=st.session_state.form_data.get(col, ''))
+                new_data[col] = st.sidebar.text_input(
+                    f"{col}",
+                    key=f"{col}_input",
+                    value=st.session_state.form_data.get(col, '')
+                )
 
-        # Sidebar buttons in two columns
+        # Sidebar buttons
         col1, col2 = st.sidebar.columns([2, 1])
         
         with col1:
@@ -80,26 +84,15 @@ def main():
                     st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
                     st.session_state.df = clean_data(st.session_state.df)
                     st.sidebar.success('Data added successfully!')
-                    st.session_state.form_data = {col: '' for col in df.columns}  # Clear form data
-                    st.rerun()  # Optional, if you want to refresh the page
+                    # Clear form data
+                    st.session_state.form_data = {col: '' for col in df.columns}
+                    st.experimental_rerun()  # Optional, if you want to refresh the page
 
         with col2:
             if st.button('Clear All'):
-                # Clear the form fields without refreshing the page
+                # Clear the form fields
                 st.session_state.form_data = {col: '' for col in df.columns}
-                # Update form fields in the sidebar
-                for col in df.columns:
-                    if is_pure_text_column(df[col]):
-                        st.sidebar.selectbox(
-                            f"Select or enter {col}",
-                            options=[""] + df[col].unique().tolist(),
-                            key=f"{col}_dropdown",
-                            index=0
-                        )
-                    else:
-                        st.sidebar.text_input(f"{col}", key=f"{col}_input", value='')
-                
-                st.sidebar.success('Form cleared!')
+                st.experimental_rerun()  # Refresh the page to clear the fields
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
