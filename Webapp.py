@@ -1,3 +1,28 @@
+import streamlit as st
+import pandas as pd
+import openpyxl
+import tempfile
+import os
+
+# Function to load Excel data
+@st.cache_data
+def load_data(file_path):
+    df = pd.read_excel(file_path)
+    return df
+
+# Function to save data back to Excel
+def save_data(data, file_path):
+    data.to_excel(file_path, index=False)
+
+# Function to clean data
+def clean_data(df):
+    df = df.fillna('NA').astype(str)
+    return df
+
+def is_pure_text_column(series):
+    # Check if the series contains only text and no numbers
+    return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
+    
 def main():
     st.title("Excel Data")
 
@@ -18,16 +43,20 @@ def main():
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
+        st.write("File uploaded successfully.")
         # Save the uploaded file to a temporary file path
         if 'original_file_path' not in st.session_state:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.original_file_path = temp_file.name
+            st.write(f"Temporary file created at {st.session_state.original_file_path}")
         
         if 'df' not in st.session_state:
+            st.write("Loading data...")
             df = load_data(st.session_state.original_file_path)
             df = clean_data(df)
             st.session_state.df = df
+            st.write("Data loaded and cleaned.")
         else:
             df = st.session_state.df
 
@@ -63,6 +92,7 @@ def main():
         if st.button('Download Updated Data'):
             updated_file = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
             save_data(st.session_state.df, updated_file.name)
+            st.write(f"Updated file saved to {updated_file.name}")
             
             with open(updated_file.name, "rb") as file:
                 st.download_button(
