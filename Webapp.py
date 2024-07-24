@@ -51,6 +51,9 @@ def main():
 
         # Data entry form in the sidebar
         st.sidebar.header('Enter New Data')
+        if 'form_data' not in st.session_state:
+            st.session_state.form_data = {col: '' for col in df.columns}
+
         new_data = {}
         for col in df.columns:
             if is_pure_text_column(df[col]):
@@ -58,10 +61,11 @@ def main():
                 new_data[col] = st.sidebar.selectbox(
                     f"Select or enter {col}",
                     options=[""] + unique_values,
-                    key=f"{col}_dropdown"
+                    key=f"{col}_dropdown",
+                    index=unique_values.index(st.session_state.form_data.get(col, '')) if st.session_state.form_data.get(col, '') in unique_values else 0
                 )
             else:
-                new_data[col] = st.sidebar.text_input(f"{col}", key=f"{col}_input")
+                new_data[col] = st.sidebar.text_input(f"{col}", key=f"{col}_input", value=st.session_state.form_data.get(col, ''))
 
         # Sidebar buttons in two columns
         col1, col2 = st.sidebar.columns([2, 1])
@@ -70,18 +74,20 @@ def main():
             if st.button('Add Data'):
                 new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
                 new_data_df = pd.DataFrame([new_data])
-                
-                if new_data_df.duplicated().any():
+
+                # Check for duplicate entries
+                if new_data_df.duplicated().any() or new_data_df.isin(st.session_state.df).all(axis=None):
                     st.sidebar.warning('The data you are trying to add already exists in the current data.')
                 else:
                     st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
                     st.session_state.df = clean_data(st.session_state.df)
                     st.sidebar.success('Data added successfully!')
+                    st.session_state.form_data = {col: '' for col in df.columns}
                     st.experimental_rerun()
 
         with col2:
             if st.button('Clear All'):
-                # Reset the form fields
+                # Reset the form fields and refresh the page
                 st.session_state.form_data = {col: '' for col in df.columns}
                 st.experimental_rerun()
 
