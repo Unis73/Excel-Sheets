@@ -90,17 +90,13 @@ def main():
                     st.sidebar.success('Data added successfully!')
                     # Clear form data
                     st.session_state.form_data = {col: '' for col in df.columns}
+                    st.experimental_rerun()
 
         with col2:
             if st.button('Clear All'):
                 # Clear the form fields without refreshing
-                for col in df.columns:
-                    key = f"{col}_input"
-                    if is_pure_text_column(df[col]):
-                        st.session_state[key] = ""
-                    else:
-                        st.session_state[key] = ""
                 st.session_state.form_data = {col: '' for col in df.columns}
+                st.experimental_rerun()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
@@ -126,6 +122,10 @@ def main():
         for col, value in filter_values.items():
             if value:
                 filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
+
+        # Display filtered data
+        st.write('Filtered Data:')
+        st.write(filtered_df)
 
         # Download filtered data
         if not filtered_df.empty:
