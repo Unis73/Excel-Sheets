@@ -74,10 +74,11 @@ def main():
             if st.button('Add Data'):
                 new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
                 new_data_df = pd.DataFrame([new_data])
-
-                # Check for duplicate entries
-                if new_data_df.duplicated().any() or new_data_df.isin(st.session_state.df).all(axis=None):
-                    st.sidebar.warning('The data you are trying to add already exists in the current data.')
+                
+                # Check for duplicate entries in the first column
+                first_col_name = df.columns[0]  # Assuming the first column should be unique
+                if new_data_df[first_col_name].values[0] in df[first_col_name].values:
+                    st.sidebar.warning(f'The value "{new_data[first_col_name]}" already exists in the "{first_col_name}" column.')
                 else:
                     st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
                     st.session_state.df = clean_data(st.session_state.df)
@@ -115,6 +116,9 @@ def main():
         for col, value in filter_values.items():
             if value:
                 filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
+        
+        st.write('Filtered Data:')
+        st.write(filtered_df)
 
         # Download filtered data
         if not filtered_df.empty:
