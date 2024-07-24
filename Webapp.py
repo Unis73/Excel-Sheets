@@ -1,30 +1,5 @@
-import streamlit as st
-import pandas as pd
-import openpyxl
-import tempfile
-import os
-
-# Function to load Excel data
-@st.cache_data
-def load_data(file_path):
-    df = pd.read_excel(file_path)
-    return df
-
-# Function to save data back to Excel
-def save_data(data, file_path):
-    data.to_excel(file_path, index=False)
-
-# Function to clean data
-def clean_data(df):
-    df = df.fillna('NA').astype(str)
-    return df
-
-def is_pure_text_column(series):
-    # Check if the series contains only text and no numbers
-    return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
-
 def main():
-    st.title("Excel Data Editor")
+    st.title("Excel Data")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
@@ -84,15 +59,18 @@ def main():
             st.sidebar.success('Data added successfully!')
             st.experimental_rerun()
 
-        # Button to update data in the Excel sheet
-        if st.button('Update Data'):
-            save_data(st.session_state.df, st.session_state.original_file_path)
-            st.success('Data updated in the Excel sheet successfully!')
-
-            # Confirm the update by reloading and displaying the updated data
-            updated_df = load_data(st.session_state.original_file_path)
-            st.write("Updated Data:")
-            st.write(updated_df)
+        # Create a download link for the updated data
+        if st.button('Download Updated Data'):
+            updated_file = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
+            save_data(st.session_state.df, updated_file.name)
+            
+            with open(updated_file.name, "rb") as file:
+                st.download_button(
+                    label="Download Excel file",
+                    data=file,
+                    file_name="updated_data.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
 
         # Filter and display data
         st.header('Retrieve Data')
