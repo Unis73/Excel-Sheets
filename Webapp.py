@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import openpyxl
-import tempfile
 
 # Function to load Excel data
 @st.cache_data
@@ -42,14 +41,14 @@ def main():
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
-        if 'file_path' not in st.session_state:
-            # Save uploaded file to a temporary file path
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
+        if 'original_file_path' not in st.session_state:
+            # Save the uploaded file to a temporary file path
+            with open(uploaded_file.name, "wb") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
-                st.session_state.file_path = temp_file.name
+                st.session_state.original_file_path = temp_file.name
 
         if 'df' not in st.session_state:
-            df = load_data(st.session_state.file_path)
+            df = load_data(st.session_state.original_file_path)
             df = clean_data(df)
             st.session_state.df = df
         else:
@@ -57,7 +56,7 @@ def main():
 
         # Show the current data in a table
         st.write('Current Data:')
-        edited_df = st.data_editor(df, key="editor")
+        edited_df = st.experimental_data_editor(df, key="editor")
         st.session_state.df = edited_df
 
         # Data entry form
@@ -89,8 +88,13 @@ def main():
 
         # Button to update data in the Excel sheet
         if st.button('Update Data'):
-            save_data(st.session_state.df, st.session_state.file_path)
+            save_data(st.session_state.df, st.session_state.original_file_path)
             st.success('Data updated in the Excel sheet successfully!')
+
+            # Confirm the update by reloading and displaying the updated data
+            updated_df = load_data(st.session_state.original_file_path)
+            st.write("Updated Data:")
+            st.write(updated_df)
 
         # Filter and display data
         st.header('Retrieve Data')
