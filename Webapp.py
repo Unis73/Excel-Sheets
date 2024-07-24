@@ -113,7 +113,7 @@ def main():
         # Download filtered data
         if not filtered_df.empty:
             buffer = io.BytesIO()
-            with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                 filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
             buffer.seek(0)
             st.download_button(
