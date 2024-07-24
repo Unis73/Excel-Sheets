@@ -24,7 +24,7 @@ def is_pure_text_column(series):
     return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
 
 def main():
-    st.title("Excel Data Management App")
+    st.title("Excel Data Management")
 
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
@@ -84,13 +84,13 @@ def main():
                     st.session_state.df = clean_data(st.session_state.df)
                     st.sidebar.success('Data added successfully!')
                     st.session_state.form_data = {col: '' for col in df.columns}
-                    st.experimental_rerun()
+                    st.rerun()
 
         with col2:
             if st.button('Clear All'):
-                # Reset the form fields and refresh the page
+                # Reset the form fields and refresh the data entry fields
                 st.session_state.form_data = {col: '' for col in df.columns}
-                st.experimental_rerun()
+                st.rerun()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
@@ -116,9 +116,6 @@ def main():
         for col, value in filter_values.items():
             if value:
                 filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
-        
-        st.write('Filtered Data:')
-        st.write(filtered_df)
 
         # Download filtered data
         if not filtered_df.empty:
