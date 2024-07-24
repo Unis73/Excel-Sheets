@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import openpyxl
 import tempfile
-import os
 
 # Function to load Excel data
 @st.cache_data
@@ -49,9 +48,12 @@ def main():
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.file_path = temp_file.name
 
-        df = load_data(st.session_state.file_path)
-        df = clean_data(df)
-        st.session_state.df = df
+        if 'df' not in st.session_state:
+            df = load_data(st.session_state.file_path)
+            df = clean_data(df)
+            st.session_state.df = df
+        else:
+            df = st.session_state.df
 
         # Show the current data in a table
         st.write('Current Data:')
@@ -78,16 +80,15 @@ def main():
         if st.sidebar.button('Add Data'):
             new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
             new_data_df = pd.DataFrame([new_data])
-            df = pd.concat([df, new_data_df], ignore_index=True)
-            df = clean_data(df)
-            st.session_state.df = df
+            st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
+            st.session_state.df = clean_data(st.session_state.df)
 
             # Save data back to the original file path
-            save_data(df, st.session_state.file_path)
+            save_data(st.session_state.df, st.session_state.file_path)
             st.sidebar.success('Data added successfully!')
 
             # Refresh the displayed DataFrame
-            data_placeholder.write(df)
+            data_placeholder.write(st.session_state.df)
 
         # Filter and display data
         st.header('Retrieve Data')
