@@ -63,24 +63,27 @@ def main():
             else:
                 new_data[col] = st.sidebar.text_input(f"{col}", key=f"{col}_input")
 
-        # Button to add new data
-        if st.sidebar.button('Add Data'):
-            new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
-            new_data_df = pd.DataFrame([new_data])
-            
-            if new_data_df.duplicated().any():
-                st.sidebar.warning('The data you are trying to add already exists in the current data.')
-            else:
-                st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
-                st.session_state.df = clean_data(st.session_state.df)
-                st.sidebar.success('Data added successfully!')
-                st.experimental_rerun()
+        # Sidebar buttons in two columns
+        col1, col2 = st.sidebar.columns([2, 1])
+        
+        with col1:
+            if st.button('Add Data'):
+                new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
+                new_data_df = pd.DataFrame([new_data])
+                
+                if new_data_df.duplicated().any():
+                    st.sidebar.warning('The data you are trying to add already exists in the current data.')
+                else:
+                    st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
+                    st.session_state.df = clean_data(st.session_state.df)
+                    st.sidebar.success('Data added successfully!')
+                    st.experimental_rerun()
 
-        # Clear All button
-        if st.sidebar.button('Clear All'):
-            # Reset the form fields
-            st.session_state.form_data = {col: '' for col in df.columns}
-            st.experimental_rerun()
+        with col2:
+            if st.button('Clear All'):
+                # Reset the form fields
+                st.session_state.form_data = {col: '' for col in df.columns}
+                st.experimental_rerun()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
