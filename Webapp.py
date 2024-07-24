@@ -84,9 +84,6 @@ def main():
                     st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
                     st.session_state.df = clean_data(st.session_state.df)
                     st.sidebar.success('Data added successfully!')
-                    # Clear form data
-                    st.session_state.form_data = {col: '' for col in df.columns}
-                    st.experimental_rerun()  # Optional, if you want to refresh the page
 
         with col2:
             if st.button('Clear All'):
