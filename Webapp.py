@@ -44,6 +44,10 @@ def main():
         else:
             df = st.session_state.df
 
+        # Initialize form data if not present
+        if 'form_data' not in st.session_state:
+            st.session_state.form_data = {col: '' for col in df.columns}
+
         st.write('Current Data:')
         st.write(st.session_state.df)
 
@@ -83,13 +87,17 @@ def main():
                     st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
                     st.session_state.df = clean_data(st.session_state.df)
                     st.sidebar.success('Data added successfully!')
-                    st.rerun()
+                    # Clear form data
+                    st.session_state.form_data = {col: '' for col in df.columns}
 
         with col2:
             if st.button('Clear All'):
-                # Clear the form fields
-                st.session_state.form_data = {col: '' for col in df.columns}
-                st.rerun()  # Refresh the page to clear the fields
+                # Clear the form fields without refreshing
+                for col in df.columns:
+                    if is_pure_text_column(df[col]):
+                        st.session_state[f"{col}_dropdown"] = ""
+                    else:
+                        st.session_state[f"{col}_input"] = ""
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
@@ -115,6 +123,10 @@ def main():
         for col, value in filter_values.items():
             if value:
                 filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
+
+        # Display filtered data
+        st.write('Filtered Data:')
+        st.write(filtered_df)
 
         # Download filtered data
         if not filtered_df.empty:
