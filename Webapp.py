@@ -115,9 +115,6 @@ def main():
         for col, value in filter_values.items():
             if value:
                 filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
-        
-        st.write('Filtered Data:')
-        st.write(filtered_df)
 
         # Download filtered data
         if not filtered_df.empty:
