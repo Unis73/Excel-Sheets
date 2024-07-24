@@ -56,18 +56,19 @@ def main():
 
         new_data = {}
         for col in df.columns:
+            key = f"{col}_input"
             if is_pure_text_column(df[col]):
                 unique_values = df[col].unique().tolist()
                 new_data[col] = st.sidebar.selectbox(
                     f"Select or enter {col}",
                     options=[""] + unique_values,
-                    key=f"{col}_dropdown",
+                    key=key,
                     index=unique_values.index(st.session_state.form_data.get(col, '')) if st.session_state.form_data.get(col, '') in unique_values else 0
                 )
             else:
                 new_data[col] = st.sidebar.text_input(
                     f"{col}",
-                    key=f"{col}_input",
+                    key=key,
                     value=st.session_state.form_data.get(col, '')
                 )
 
@@ -94,10 +95,12 @@ def main():
             if st.button('Clear All'):
                 # Clear the form fields without refreshing
                 for col in df.columns:
+                    key = f"{col}_input"
                     if is_pure_text_column(df[col]):
-                        st.session_state[f"{col}_dropdown"] = ""
+                        st.session_state[key] = ""
                     else:
-                        st.session_state[f"{col}_input"] = ""
+                        st.session_state[key] = ""
+                st.session_state.form_data = {col: '' for col in df.columns}
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
