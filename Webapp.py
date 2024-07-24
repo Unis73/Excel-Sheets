@@ -43,12 +43,12 @@ def main():
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
+        # Save the uploaded file to a temporary file path
         if 'original_file_path' not in st.session_state:
-            # Save uploaded file to a temporary file path
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.original_file_path = temp_file.name
-
+        
         if 'df' not in st.session_state:
             df = load_data(st.session_state.original_file_path)
             df = clean_data(df)
@@ -66,7 +66,6 @@ def main():
         new_data = {}
         for col in df.columns:
             if is_pure_text_column(df[col]):
-                # If column contains only text values with no numbers, use dropdown
                 unique_values = df[col].unique().tolist()
                 new_data[col] = st.sidebar.selectbox(
                     f"Select or enter {col}",
@@ -74,7 +73,6 @@ def main():
                     key=f"{col}_dropdown"
                 )
             else:
-                # If column contains numbers or mixed data, use text input
                 new_data[col] = st.sidebar.text_input(f"{col}", key=f"{col}_input")
 
         # Button to add new data
@@ -84,8 +82,6 @@ def main():
             st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
             st.session_state.df = clean_data(st.session_state.df)
             st.sidebar.success('Data added successfully!')
-
-            # Refresh the displayed DataFrame
             st.experimental_rerun()
 
         # Button to update data in the Excel sheet
@@ -106,7 +102,6 @@ def main():
         for col in filter_cols:
             filter_values[col] = st.text_input(f'Enter value to filter {col}:')
 
-        # Filter the DataFrame based on multiple conditions
         if filter_values:
             filtered_df = df.copy()
             for col, value in filter_values.items():
