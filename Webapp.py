@@ -82,13 +82,15 @@ def main():
             new_data_df = pd.DataFrame([new_data])
             st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
             st.session_state.df = clean_data(st.session_state.df)
-
-            # Save data back to the original file path
-            save_data(st.session_state.df, st.session_state.file_path)
             st.sidebar.success('Data added successfully!')
 
             # Refresh the displayed DataFrame
             data_placeholder.write(st.session_state.df)
+
+        # Button to update data in the Excel sheet
+        if st.button('Update Data'):
+            save_data(st.session_state.df, st.session_state.file_path)
+            st.success('Data updated in the Excel sheet successfully!')
 
         # Filter and display data
         st.header('Retrieve Data')
@@ -105,10 +107,6 @@ def main():
                 if value:
                     filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
             st.write(filtered_df)
-
-        # Provide a download link for the updated file
-        with open(st.session_state.file_path, 'rb') as f:
-            st.download_button('Download updated file', f, file_name='updated_file.xlsx')
 
 if __name__ == "__main__":
     main()
