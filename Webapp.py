@@ -43,20 +43,16 @@ def main():
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
-        st.write("File uploaded successfully.")
         # Save the uploaded file to a temporary file path
         if 'original_file_path' not in st.session_state:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.original_file_path = temp_file.name
-            st.write(f"Temporary file created at {st.session_state.original_file_path}")
         
         if 'df' not in st.session_state:
-            st.write("Loading data...")
             df = load_data(st.session_state.original_file_path)
             df = clean_data(df)
             st.session_state.df = df
-            st.write("Data loaded and cleaned.")
         else:
             df = st.session_state.df
 
