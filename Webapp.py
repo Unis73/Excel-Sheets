@@ -24,7 +24,7 @@ def is_pure_text_column(series):
     return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
 
 def main():
-    st.title("Excel Data Management")
+    st.title("Excel Data Management App")
 
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
@@ -49,7 +49,7 @@ def main():
         edited_df = st.experimental_data_editor(df, key="editor")
         st.session_state.df = edited_df
 
-        # Data entry form
+        # Data entry form in the sidebar
         st.sidebar.header('Enter New Data')
         new_data = {}
         for col in df.columns:
@@ -78,11 +78,9 @@ def main():
 
         # Clear All button
         if st.sidebar.button('Clear All'):
-            for col in df.columns:
-                if is_pure_text_column(df[col]):
-                    st.sidebar.selectbox(f"Select or enter {col}", options=[""] + df[col].unique().tolist(), key=f"{col}_dropdown", index=0)
-                else:
-                    st.sidebar.text_input(f"{col}", key=f"{col}_input", value='')
+            # Reset the form fields
+            st.session_state.form_data = {col: '' for col in df.columns}
+            st.experimental_rerun()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
