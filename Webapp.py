@@ -23,7 +23,7 @@ def is_pure_text_column(series):
     return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
 
 def main():
-    st.title("Excel Data")
+    st.title("Excel Data Editor")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
@@ -57,8 +57,8 @@ def main():
 
         # Show the current data in a table
         st.write('Current Data:')
-        data_placeholder = st.empty()
-        data_placeholder.write(df)
+        edited_df = st.data_editor(df, key="editor")
+        st.session_state.df = edited_df
 
         # Data entry form
         st.sidebar.header('Enter New Data')
@@ -85,7 +85,7 @@ def main():
             st.sidebar.success('Data added successfully!')
 
             # Refresh the displayed DataFrame
-            data_placeholder.write(st.session_state.df)
+            st.experimental_rerun()
 
         # Button to update data in the Excel sheet
         if st.button('Update Data'):
