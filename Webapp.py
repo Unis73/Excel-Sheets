@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import openpyxl
+import tempfile
+import os
 
 # Function to load Excel data
 @st.cache_data
@@ -42,8 +44,8 @@ def main():
 
     if uploaded_file is not None:
         if 'original_file_path' not in st.session_state:
-            # Save the uploaded file to a temporary file path
-            with open(uploaded_file.name, "wb") as temp_file:
+            # Save uploaded file to a temporary file path
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.original_file_path = temp_file.name
 
