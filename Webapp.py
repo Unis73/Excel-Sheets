@@ -44,13 +44,10 @@ def main():
         else:
             df = st.session_state.df
 
-        # Show the current data in a table
-        st.write('Current Data:')
-        edited_df = st.experimental_data_editor(df, key="editor")
-        st.session_state.df = edited_df
-
         # Data entry form in the sidebar
         st.sidebar.header('Enter New Data')
+
+        # Initialize form data if not present
         if 'form_data' not in st.session_state:
             st.session_state.form_data = {col: '' for col in df.columns}
 
@@ -83,14 +80,26 @@ def main():
                     st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
                     st.session_state.df = clean_data(st.session_state.df)
                     st.sidebar.success('Data added successfully!')
-                    st.session_state.form_data = {col: '' for col in df.columns}
-                    st.rerun()
+                    st.session_state.form_data = {col: '' for col in df.columns}  # Clear form data
+                    st.rerun()  # Optional, if you want to refresh the page
 
         with col2:
             if st.button('Clear All'):
-                # Reset the form fields and refresh the data entry fields
+                # Clear the form fields without refreshing the page
                 st.session_state.form_data = {col: '' for col in df.columns}
-                st.rerun()
+                # Update form fields in the sidebar
+                for col in df.columns:
+                    if is_pure_text_column(df[col]):
+                        st.sidebar.selectbox(
+                            f"Select or enter {col}",
+                            options=[""] + df[col].unique().tolist(),
+                            key=f"{col}_dropdown",
+                            index=0
+                        )
+                    else:
+                        st.sidebar.text_input(f"{col}", key=f"{col}_input", value='')
+                
+                st.sidebar.success('Form cleared!')
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
