@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import openpyxl
 import tempfile
 import io
 
@@ -53,21 +54,22 @@ def main():
 
         # Create keys in st.session_state for input fields
         for col in df.columns:
-            key = str(f"{col}_input")  # Convert key to string
+            key = f"{col}_input"
             if key not in st.session_state:
                 st.session_state[key] = ""
 
         # Data entry form
         new_data = {}
         for col in df.columns:
+            key = f"{col}_input"
             if is_pure_text_column(df[col]):
                 unique_values = df[col].unique().tolist()
-                new_data[col] = st.sidebar.selectbox(f"Select or enter {col}", options=[""] + unique_values, key=f"{col}_input")
+                new_data[col] = st.sidebar.selectbox(f"Select or enter {col}", options=[""] + unique_values, key=key)
             else:
-                new_data[col] = st.sidebar.text_input(f"{col}", value="", key=f"{col}_input")
+                new_data[col] = st.sidebar.text_input(f"{col}", value="", key=key)
 
         # Buttons 
-        add_button = st.sidebar.button('Add Data') 
+        add_button = st.sidebar.button('Add Data')
         clear_button = st.sidebar.button('Clear All')
 
         if add_button:
@@ -82,10 +84,10 @@ def main():
                 st.session_state.df = clean_data(st.session_state.df)
                 st.sidebar.success('Data added successfully!')
 
-        if clear_button: 
-            for col in df.columns: 
-                key = str(f"{col}_input")  # Convert key to string
-                st.session_state[key] = "" 
+        if clear_button:
+            for col in df.columns:
+                key = f"{col}_input"
+                st.session_state[key] = ""
             st.experimental_rerun()
 
         # Create a download link for the updated data
@@ -103,7 +105,7 @@ def main():
         # Filter and display data
         st.header('Retrieve Data')
         filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
-        
+
         filter_values = {}
         for col in filter_cols:
             filter_values[col] = st.text_input(f'Enter value to filter {col}:')
