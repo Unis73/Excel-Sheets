@@ -55,7 +55,6 @@ def main():
         # Create keys in st.session_state for input fields
         for col in df.columns:
             key = f"{col}_input"
-            if key not in st.session_state:
 
         # Data entry form
         new_data = {}
