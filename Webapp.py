@@ -56,11 +56,13 @@ def main():
         new_data = {}
         for col in df.columns:
             key = f"{col}_input"
+            if key not in st.session_state:
+                st.session_state[key] = ""
             if is_pure_text_column(df[col]):
                 unique_values = df[col].unique().tolist()
                 new_data[col] = st.sidebar.selectbox(f"Select or enter {col}", options=[""] + unique_values, key=key)
             else:
-                new_data[col] = st.sidebar.text_input(f"{col}", value="", key=key)
+                new_data[col] = st.sidebar.text_input(f"{col}", value=st.session_state[key], key=key)
 
         # Buttons 
         add_button = st.sidebar.button('Add Data')
