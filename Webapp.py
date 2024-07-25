@@ -53,9 +53,7 @@ def main():
 
         # Create keys in st.session_state for input fields
         for col in df.columns:
-            key = f"{col}_input"
-            if not isinstance(key, str):
-                raise ValueError(f"Key {key} is not a string")
+            key = str(f"{col}_input")  # Convert key to string
             if key not in st.session_state:
                 st.session_state[key] = ""
 
@@ -86,9 +84,7 @@ def main():
 
         if clear_button: 
             for col in df.columns: 
-                key = f"{col}_input"
-                if not isinstance(key, str):
-                    raise ValueError(f"Key {key} is not a string")
+                key = str(f"{col}_input")  # Convert key to string
                 st.session_state[key] = "" 
             st.experimental_rerun()
 
