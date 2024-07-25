@@ -26,7 +26,7 @@ def is_pure_text_column(series):
 def main():
     st.title("Excel Data Management")
 
-        # Hide specific Streamlit style elements
+    # Hide specific Streamlit style elements
     hide_streamlit_style = """
         <style>
         #MainMenu {visibility: hidden;}
@@ -40,14 +40,20 @@ def main():
 
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
-    uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
+    uploaded_file = st.sidebar.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
         # Save the uploaded file to a temporary file path
+        if 'uploaded_file' in st.session_state and st.session_state.uploaded_file != uploaded_file:
+            # Clear session state to reset the app if a new file is uploaded
+            st.session_state.clear()
+            st.experimental_rerun()
+
         if 'original_file_path' not in st.session_state:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.original_file_path = temp_file.name
+                st.session_state.uploaded_file = uploaded_file
 
         if 'df' not in st.session_state:
             df = load_data(st.session_state.original_file_path)
@@ -132,8 +138,9 @@ def main():
         for col in filter_cols:
             filter_values[col] = st.text_input(f'Enter value to filter {col}:')
 
+        filtered_df = df.copy()  # Initialize filtered_df before the condition
+
         if filter_values: 
-            filtered_df = df.copy()
             for col, value in filter_values.items():
                 if value:
                     filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
