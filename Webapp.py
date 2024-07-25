@@ -132,10 +132,12 @@ def main():
         for col in filter_cols:
             filter_values[col] = st.text_input(f'Enter value to filter {col}:')
 
-        filtered_df = df.copy()
-        for col, value in filter_values.items():
-            if value:
-                filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
+        if filter_values: 
+            filtered_df = df.copy()
+            for col, value in filter_values.items():
+                if value:
+                    filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
+            st.write(filtered_df)
 
         # Download filtered data
         if not filtered_df.empty:
