@@ -88,16 +88,12 @@ def main():
                     st.sidebar.success('Data added successfully!')
                     # Clear form data
                     st.session_state.form_data = {col: '' for col in df.columns}
-                    for col in df.columns:
-                        st.session_state[f"{col}_input"] = ''
                     st.experimental_rerun()
 
         with col2:
             if st.button('Clear All'):
                 # Clear the form fields without refreshing
                 st.session_state.form_data = {col: '' for col in df.columns}
-                for col in df.columns:
-                    st.session_state[f"{col}_input"] = ''
                 st.experimental_rerun()
 
         # Create a download link for the updated data
