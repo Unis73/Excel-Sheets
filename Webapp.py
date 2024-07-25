@@ -26,6 +26,18 @@ def is_pure_text_column(series):
 def main():
     st.title("Excel Data Management")
 
+    # Hide specific Streamlit style elements
+    hide_streamlit_style = """
+        <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        .css-18ni7ap.e8zbici2 {visibility: hidden;} /* Hide the Streamlit menu icon */
+        .css-1v0mbdj.e8zbici1 {visibility: visible;} /* Keep the settings icon */
+        </style>
+    """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
