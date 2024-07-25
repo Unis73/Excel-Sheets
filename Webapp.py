@@ -51,6 +51,11 @@ def main():
         if 'new_data' not in st.session_state:
             st.session_state.new_data = {col: '' for col in df.columns}
 
+        # Create keys in st.session_state for input fields
+        for col in df.columns:
+            if f"{col}_input" not in st.session_state:
+                st.session_state[f"{col}_input"] = ""
+
         # Data entry form
         new_data = {}
         for col in df.columns:
@@ -79,7 +84,7 @@ def main():
         if clear_button: 
             for col in df.columns: 
                 st.session_state[f"{col}_input"] = "" 
-                st.experimental_rerun()
+            st.experimental_rerun()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
