@@ -25,18 +25,6 @@ def is_pure_text_column(series):
 
 def main():
     st.title("Excel Data Management")
-    
-        # Hide specific Streamlit style elements
-    hide_streamlit_style = """
-        <style>
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
-        .css-18ni7ap.e8zbici2 {visibility: hidden;} /* Hide the Streamlit menu icon */
-        .css-1v0mbdj.e8zbici1 {visibility: visible;} /* Keep the settings icon */
-        </style>
-    """
-    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
@@ -74,14 +62,12 @@ def main():
                 new_data[col] = st.sidebar.selectbox(
                     f"Select or enter {col}",
                     options=[""] + unique_values,
-                    key=key,
-                    index=unique_values.index(st.session_state.form_data.get(col, '')) if st.session_state.form_data.get(col, '') in unique_values else 0
+                    key=key
                 )
             else:
                 new_data[col] = st.sidebar.text_input(
                     f"{col}",
-                    key=key,
-                    value=st.session_state.form_data.get(col, '')
+                    key=key
                 )
 
         # Sidebar buttons
@@ -102,6 +88,8 @@ def main():
                     st.sidebar.success('Data added successfully!')
                     # Clear form data
                     st.session_state.form_data = {col: '' for col in df.columns}
+                    for col in df.columns:
+                        st.session_state[f"{col}_input"] = ''
                     st.experimental_rerun()
 
         with col2:
