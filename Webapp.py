@@ -25,8 +25,8 @@ def is_pure_text_column(series):
 
 def main():
     st.title("Excel Data Management")
-
-    # Hide specific Streamlit style elements
+    
+        # Hide specific Streamlit style elements
     hide_streamlit_style = """
         <style>
         #MainMenu {visibility: hidden;}
@@ -40,21 +40,14 @@ def main():
 
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
-    uploaded_file = st.sidebar.file_uploader("Choose an Excel file", type="xlsx")
+    uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
-        # Check if a new file is uploaded
-        if 'uploaded_file' in st.session_state and st.session_state.uploaded_file != uploaded_file:
-            # Clear session state to reset the app if a new file is uploaded
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.experimental_rerun()
-
+        # Save the uploaded file to a temporary file path
         if 'original_file_path' not in st.session_state:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.original_file_path = temp_file.name
-                st.session_state.uploaded_file = uploaded_file
 
         if 'df' not in st.session_state:
             df = load_data(st.session_state.original_file_path)
@@ -139,26 +132,28 @@ def main():
         for col in filter_cols:
             filter_values[col] = st.text_input(f'Enter value to filter {col}:')
 
-        filtered_df = df.copy()  # Initialize filtered_df before the condition
-
-        if filter_values: 
+        if st.button('Apply Filters'):
+            filtered_df = df.copy()
             for col, value in filter_values.items():
                 if value:
                     filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
+
+            # Display filtered data
+            st.write('Filtered Data:')
             st.write(filtered_df)
 
-        # Download filtered data
-        if not filtered_df.empty:
-            buffer = io.BytesIO()
-            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-                filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
-            buffer.seek(0)
-            st.download_button(
-                label="Download Filtered Data",
-                data=buffer,
-                file_name="filtered_data.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+            # Download filtered data
+            if not filtered_df.empty:
+                buffer = io.BytesIO()
+                with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                    filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
+                buffer.seek(0)
+                st.download_button(
+                    label="Download Filtered Data",
+                    data=buffer,
+                    file_name="filtered_data.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
 
 if __name__ == "__main__":
     main()
