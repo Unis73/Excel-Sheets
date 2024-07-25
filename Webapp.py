@@ -76,10 +76,10 @@ def main():
                 st.session_state.df = clean_data(st.session_state.df)
                 st.sidebar.success('Data added successfully!')
 
-        if clear_button:
-            for col in df.columns:
-                st.session_state[f"{col}_input"] = ""
-            st.experimental_rerun()
+        if clear_button: 
+    for col in df.columns: 
+        st.session_state[f"{col}_input"] = "" 
+    st.experimental_rerun()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
