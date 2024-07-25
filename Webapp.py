@@ -23,6 +23,10 @@ def is_pure_text_column(series):
     # Check if the series contains only text and no numbers
     return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
 
+def clear_form():
+    st.experimental_set_query_params()  # Reset URL parameters to clear state
+    st.experimental_rerun()  # Rerun to clear form inputs
+
 def main():
     st.title("Excel Data Management")
 
@@ -86,15 +90,11 @@ def main():
                     st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
                     st.session_state.df = clean_data(st.session_state.df)
                     st.sidebar.success('Data added successfully!')
-                    # Clear form data
-                    for col in df.columns:
-                        st.session_state[f"{col}_input"] = ""
-                    st.experimental_rerun()
+                    clear_form()
 
         with col2:
             if st.button('Clear All'):
-                for col in df.columns:
-                    st.session_state[f"{col}_input"] = ""
+                clear_form()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
