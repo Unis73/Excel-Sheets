@@ -26,7 +26,7 @@ def is_pure_text_column(series):
 def main():
     st.title("Excel Data Management")
 
-    # Hide specific Streamlit style elements
+        # Hide specific Streamlit style elements
     hide_streamlit_style = """
         <style>
         #MainMenu {visibility: hidden;}
@@ -108,6 +108,8 @@ def main():
             if st.button('Clear All'):
                 # Clear the form fields without refreshing
                 st.session_state.form_data = {col: '' for col in df.columns}
+                for col in df.columns:
+                    st.session_state[f"{col}_input"] = ''
                 st.experimental_rerun()
 
         # Create a download link for the updated data
@@ -134,6 +136,10 @@ def main():
         for col, value in filter_values.items():
             if value:
                 filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
+
+        # Display filtered data
+        st.write('Filtered Data:')
+        st.write(filtered_df)
 
         # Download filtered data
         if not filtered_df.empty:
