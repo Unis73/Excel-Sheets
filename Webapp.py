@@ -44,16 +44,16 @@ def main():
         else:
             df = st.session_state.df
 
+        st.write('Current Data:')
+        st.write(st.session_state.df)
+
         # Initialize form data if not present
         if 'form_data' not in st.session_state:
             st.session_state.form_data = {col: '' for col in df.columns}
 
-        st.write('Current Data:')
-        st.write(st.session_state.df)
-
-        # Sidebar form fields
         st.sidebar.header('Enter New Data')
 
+        # Initialize form fields
         new_data = {}
         for col in df.columns:
             key = f"{col}_input"
@@ -70,7 +70,7 @@ def main():
                     key=key
                 )
 
-        # Sidebar buttons
+        # Buttons for adding data and clearing form
         col1, col2 = st.sidebar.columns([2, 1])
         
         with col1:
@@ -93,10 +93,8 @@ def main():
 
         with col2:
             if st.button('Clear All'):
-                # Clear the form fields without refreshing
                 for col in df.columns:
                     st.session_state[f"{col}_input"] = ""
-                st.experimental_rerun()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
