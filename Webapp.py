@@ -53,8 +53,11 @@ def main():
 
         # Create keys in st.session_state for input fields
         for col in df.columns:
-            if f"{col}_input" not in st.session_state:
-                st.session_state[f"{col}_input"] = ""
+            key = f"{col}_input"
+            if not isinstance(key, str):
+                raise ValueError(f"Key {key} is not a string")
+            if key not in st.session_state:
+                st.session_state[key] = ""
 
         # Data entry form
         new_data = {}
@@ -65,8 +68,8 @@ def main():
             else:
                 new_data[col] = st.sidebar.text_input(f"{col}", value="", key=f"{col}_input")
 
-        # Buttons
-        add_button = st.sidebar.button('Add Data')
+        # Buttons 
+        add_button = st.sidebar.button('Add Data') 
         clear_button = st.sidebar.button('Clear All')
 
         if add_button:
@@ -83,7 +86,10 @@ def main():
 
         if clear_button: 
             for col in df.columns: 
-                st.session_state[f"{col}_input"] = "" 
+                key = f"{col}_input"
+                if not isinstance(key, str):
+                    raise ValueError(f"Key {key} is not a string")
+                st.session_state[key] = "" 
             st.experimental_rerun()
 
         # Create a download link for the updated data
