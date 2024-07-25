@@ -52,10 +52,6 @@ def main():
         if 'new_data' not in st.session_state:
             st.session_state.new_data = {col: '' for col in df.columns}
 
-        # Create keys in st.session_state for input fields
-        for col in df.columns:
-            key = f"{col}_input"
-
         # Data entry form
         new_data = {}
         for col in df.columns:
@@ -76,11 +72,18 @@ def main():
 
             first_col_name = df.columns[0]
             if new_data_df[first_col_name].values[0] in df[first_col_name].values:
-                st.sidebar.warning(f'The value "{new_data_cleaned[first_col_name]}" already exists in the "{first_col_name}" column.')
+                st.warning(f'The value "{new_data_cleaned[first_col_name]}" already exists in the "{first_col_name}" column.')
             else:
                 st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
                 st.session_state.df = clean_data(st.session_state.df)
                 st.sidebar.success('Data added successfully!')
+                
+                # Clear the form after adding data
+                for col in df.columns:
+                    key = f"{col}_input"
+                    st.session_state[key] = ""
+
+                st.experimental_rerun()
 
         if clear_button:
             for col in df.columns:
