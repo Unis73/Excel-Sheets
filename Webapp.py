@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import openpyxl
 import tempfile
 import io
 
@@ -22,10 +21,6 @@ def clean_data(df):
 def is_pure_text_column(series):
     # Check if the series contains only text and no numbers
     return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
-
-def clear_form():
-    st.experimental_set_query_params()  # Reset URL parameters to clear state
-    st.experimental_rerun()  # Rerun to clear form inputs
 
 def main():
     st.title("Excel Data Management")
@@ -51,50 +46,37 @@ def main():
         st.write('Current Data:')
         st.write(st.session_state.df)
 
-        # Initialize form data if not present
-        if 'form_data' not in st.session_state:
-            st.session_state.form_data = {col: '' for col in df.columns}
-
         st.sidebar.header('Enter New Data')
-
-        # Initialize form fields
-        new_data = {}
-        for col in df.columns:
-            key = f"{col}_input"
-            if is_pure_text_column(df[col]):
-                unique_values = df[col].unique().tolist()
-                new_data[col] = st.sidebar.selectbox(
-                    f"Select or enter {col}",
-                    options=[""] + unique_values,
-                    key=key
-                )
-            else:
-                new_data[col] = st.sidebar.text_input(
-                    f"{col}",
-                    key=key
-                )
-
-        # Buttons for adding data and clearing form
-        col1, col2 = st.sidebar.columns([2, 1])
         
-        with col1:
-            if st.button('Add Data'):
-                new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
-                new_data_df = pd.DataFrame([new_data])
-                
-                # Check for duplicate entries in the first column
-                first_col_name = df.columns[0]  # Assuming the first column should be unique
-                if new_data_df[first_col_name].values[0] in df[first_col_name].values:
-                    st.sidebar.warning(f'The value "{new_data[first_col_name]}" already exists in the "{first_col_name}" column.')
+        with st.form(key='data_entry_form'):
+            new_data = {}
+            for col in df.columns:
+                if is_pure_text_column(df[col]):
+                    unique_values = df[col].unique().tolist()
+                    new_data[col] = st.selectbox(f"Select or enter {col}", options=[""] + unique_values)
                 else:
-                    st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
-                    st.session_state.df = clean_data(st.session_state.df)
-                    st.sidebar.success('Data added successfully!')
-                    clear_form()
-
-        with col2:
-            if st.button('Clear All'):
-                clear_form()
+                    new_data[col] = st.text_input(f"{col}")
+            
+            submit_button = st.form_submit_button(label='Add Data')
+            clear_button = st.form_submit_button(label='Clear All')
+        
+        if submit_button:
+            new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
+            new_data_df = pd.DataFrame([new_data])
+            
+            # Check for duplicate entries in the first column
+            first_col_name = df.columns[0]  # Assuming the first column should be unique
+            if new_data_df[first_col_name].values[0] in df[first_col_name].values:
+                st.sidebar.warning(f'The value "{new_data[first_col_name]}" already exists in the "{first_col_name}" column.')
+            else:
+                st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
+                st.session_state.df = clean_data(st.session_state.df)
+                st.sidebar.success('Data added successfully!')
+                st.experimental_rerun()
+        
+        if clear_button:
+            st.experimental_set_query_params()
+            st.experimental_rerun()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
