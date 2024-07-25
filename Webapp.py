@@ -52,6 +52,10 @@ def main():
         if 'new_data' not in st.session_state:
             st.session_state.new_data = {col: '' for col in df.columns}
 
+        # Add a persistent warning message for the first column
+        first_col = df.columns[0]
+        st.sidebar.warning("Make sure the first column is unique.")
+
         # Data entry form
         new_data = {}
         for col in df.columns:
