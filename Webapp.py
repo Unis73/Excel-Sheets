@@ -78,8 +78,8 @@ def main():
 
         if clear_button: 
             for col in df.columns: 
-            st.session_state[f"{col}_input"] = "" 
-            st.experimental_rerun()
+                st.session_state[f"{col}_input"] = "" 
+                st.experimental_rerun()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
