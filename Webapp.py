@@ -56,7 +56,6 @@ def main():
         for col in df.columns:
             key = f"{col}_input"
             if key not in st.session_state:
-                st.session_state[key] = ""
 
         # Data entry form
         new_data = {}
