@@ -126,7 +126,6 @@ def main():
         filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
         
         filter_values = {}
-        filtered_df = df.copy()  # Initialize filtered_df before the condition
 
         if filter_cols:
             for col in filter_cols:
