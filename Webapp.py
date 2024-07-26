@@ -25,6 +25,18 @@ def is_pure_text_column(series):
 def main():
     st.title("Excel Data Management")
 
+    # Hide specific Streamlit style elements
+    hide_streamlit_style = """
+        <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        .css-18ni7ap.e8zbici2 {visibility: hidden;} /* Hide the Streamlit menu icon */
+        .css-1v0mbdj.e8zbici1 {visibility: visible;} /* Keep the settings icon */
+        </style>
+    """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
@@ -70,9 +82,8 @@ def main():
             else:
                 new_data[col] = st.sidebar.text_input(f"{col}", value=st.session_state[key], key=key)
 
-        # Buttons 
+        # Add data button
         add_button = st.sidebar.button('Add Data')
-        clear_button = st.sidebar.button('Clear All')
 
         if add_button:
             new_data_cleaned = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
@@ -85,20 +96,13 @@ def main():
                 st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
                 st.session_state.df = clean_data(st.session_state.df)
                 st.sidebar.success('Data added successfully!')
-                
+
                 # Clear the form after adding data
                 for col in df.columns:
                     key = f"{col}_input"
                     st.session_state[key] = ""
-                
-                # Trigger a rerun to refresh the form
-                st.experimental_rerun()
 
-        if clear_button:
-            for col in df.columns:
-                key = f"{col}_input"
-                st.session_state[key] = ""
-            st.experimental_rerun()
+                st.experimental_rerun()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
