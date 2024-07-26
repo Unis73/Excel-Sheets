@@ -111,19 +111,17 @@ def main():
                 st.experimental_rerun()  # Refresh the sidebar and form fields
 
         # Create a download link for the updated data
-        file_name = st.text_input("Enter the name of the file to download (without extension):", key="updated_file_name")
         if st.button('Download Updated Data'):
-            if file_name:
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as updated_file:
-                    save_data(st.session_state.df, updated_file.name)
-                    with open(updated_file.name, "rb") as file:
-                        st.download_button(
-                            label="Download Excel file",
-                            data=file,
-                            file_name=f"{file_name}.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
-                st.success('Data downloaded successfully!')
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as updated_file:
+                save_data(st.session_state.df, updated_file.name)
+                with open(updated_file.name, "rb") as file:
+                    st.download_button(
+                        label="Download Excel file",
+                        data=file,
+                        file_name="updated_data.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+            st.success('Data downloaded successfully!')
 
         # Filter and display data
         st.header('Retrieve Data')
@@ -156,20 +154,19 @@ def main():
                     st.write(filtered_df)
 
                     # Download filtered data
-                    file_name = st.text_input("Enter the name of the file to download (without extension):", key="filtered_file_name")
-                    if file_name:
+                    if st.button('Download Filtered Data'):
                         buffer = io.BytesIO()
                         with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                             filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
                         buffer.seek(0)
                         
-                        if st.download_button(
-                            label="Download Filtered Data",
+                        st.download_button(
+                            label="Download Excel file",
                             data=buffer,
-                            file_name=f"{file_name}.xlsx",
+                            file_name="filtered_data.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        ):
-                            st.success('Filtered data downloaded successfully!')
+                        )
+                        st.success('Filtered data downloaded successfully!')
 
 if __name__ == "__main__":
     main()
