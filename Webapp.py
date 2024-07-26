@@ -91,26 +91,20 @@ def main():
                     value=st.session_state.form_data.get(col, '')
                 )
 
-        # Sidebar buttons
-        col1, col2 = st.sidebar.columns([2, 1])
-        
-        with col1:
-            if st.sidebar.button('Add Data'):
-                new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
-                new_data_df = pd.DataFrame([new_data])
-                
-                # Check for duplicate entries in the first column
-                first_col_name = df.columns[0]  # Assuming the first column should be unique
-                if new_data_df[first_col_name].values[0] in df[first_col_name].values:
-                    st.error(f'The value "{new_data[first_col_name]}" already exists in the "{first_col_name}" column.')
-                else:
-                    st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
-                    st.session_state.df = clean_data(st.session_state.df)
-                    st.success('Data added successfully!')
-
-        with col2:
-            if st.sidebar.button('Clear All'):
-                # Clear the form fields without refreshing
+        # Sidebar button to add data
+        if st.sidebar.button('Add Data'):
+            new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
+            new_data_df = pd.DataFrame([new_data])
+            
+            # Check for duplicate entries in the first column
+            first_col_name = df.columns[0]  # Assuming the first column should be unique
+            if new_data_df[first_col_name].values[0] in df[first_col_name].values:
+                st.error(f'The value "{new_data[first_col_name]}" already exists in the "{first_col_name}" column.')
+            else:
+                st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
+                st.session_state.df = clean_data(st.session_state.df)
+                st.success('Data added successfully!')
+                # Clear the form fields after successful data addition
                 for col in df.columns:
                     st.session_state[f"{col}_input"] = ''
                 st.experimental_rerun()
@@ -164,3 +158,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+``` &#8203;:citation[oaicite:0]{index=0}&#8203;
