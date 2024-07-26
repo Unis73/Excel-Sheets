@@ -39,8 +39,8 @@ def main():
 
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
-    uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
     st.sidebar.warning("Ensure the first column contains unique values.")
+    uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
         # Check if a new file is uploaded
@@ -142,18 +142,18 @@ def main():
                 st.write('Filtered Data:')
                 st.write(filtered_df)
 
-        # Download filtered data
-        if not filtered_df.empty:
-            buffer = io.BytesIO()
-            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-                filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
-            buffer.seek(0)
-            st.download_button(
-                label="Download Filtered Data",
-                data=buffer,
-                file_name="filtered_data.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+                # Download filtered data
+                buffer = io.BytesIO()
+                with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                    filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
+                buffer.seek(0)
+                st.download_button(
+                    label="Download Filtered Data",
+                    data=buffer,
+                    file_name="filtered_data.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+                st.success('Filtered data downloaded successfully!')
 
 if __name__ == "__main__":
     main()
