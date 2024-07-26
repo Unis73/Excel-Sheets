@@ -1,17 +1,8 @@
 import streamlit as st
 import pandas as pd
-import pytesseract
-from PIL import Image
-from pdf2image import convert_from_path
-import tempfile
 import openpyxl
-import os
-
-# Configure Tesseract path
-if os.name == 'nt':  # Windows
-    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-else:  # Linux
-    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+import tempfile
+import io
 
 # Function to load Excel data
 @st.cache_data
@@ -28,59 +19,42 @@ def clean_data(df):
     df = df.fillna('NA').astype(str)
     return df
 
-# OCR function to extract text from image
-def extract_text_from_image(image):
-    try:
-        text = pytesseract.image_to_string(image)
-        return text
-    except pytesseract.TesseractNotFoundError:
-        st.error("Tesseract OCR not found. Please ensure it is installed and the path is correctly set.")
-        return ""
-
-# Function to extract text from PDF
-def extract_text_from_pdf(pdf_path):
-    text = ""
-    images = convert_from_path(pdf_path)
-    for image in images:
-        text += extract_text_from_image(image) + "\n"
-    return text
-
-# Function to map extracted data to DataFrame columns
-def map_data_to_columns(extracted_text, df_columns):
-    lines = extracted_text.split('\n')
-    data_dict = {col: [] for col in df_columns}
-    
-    for line in lines:
-        if line.strip():
-            values = line.split(',')
-            for i, col in enumerate(df_columns):
-                if i < len(values):
-                    data_dict[col].append(values[i].strip())
-    
-    new_data_df = pd.DataFrame(data_dict)
-    return new_data_df
-
-def match_and_fill_data(extracted_df, original_df):
-    # Example matching logic: Assuming the first column is a unique identifier
-    for index, row in extracted_df.iterrows():
-        unique_id = row[original_df.columns[0]]
-        if unique_id in original_df[original_df.columns[0]].values:
-            original_df.loc[original_df[original_df.columns[0]] == unique_id] = row
-        else:
-            original_df = original_df.append(row, ignore_index=True)
-    return original_df
+def is_pure_text_column(series):
+    return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
 
 def main():
-    st.title("Excel Data Management")
+    st.title("EXCEL FORMS")
 
+    # Hide specific Streamlit style elements
+    hide_streamlit_style = """
+        <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        .css-18ni7ap.e8zbici2 {visibility: hidden;} /* Hide the Streamlit menu icon */
+        .css-1v0mbdj.e8zbici1 {visibility: visible;} /* Keep the settings icon */
+        </style>
+    """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+    # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
+    st.sidebar.warning("Ensure the first column contains unique values.")
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
+        # Check if a new file is uploaded
+        if 'uploaded_file' in st.session_state and st.session_state.uploaded_file != uploaded_file:
+            # Clear session state to reset the app if a new file is uploaded
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.experimental_rerun()
+
         if 'original_file_path' not in st.session_state:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.original_file_path = temp_file.name
+                st.session_state.uploaded_file = uploaded_file
 
         if 'df' not in st.session_state:
             df = load_data(st.session_state.original_file_path)
@@ -89,38 +63,55 @@ def main():
         else:
             df = st.session_state.df
 
+        # Initialize form data if not present
+        if 'form_data' not in st.session_state:
+            st.session_state.form_data = {col: '' for col in df.columns}
+
         st.write('Current Data:')
         st.write(st.session_state.df)
 
-        st.sidebar.header('Upload Scanned Document')
-        scanned_file = st.sidebar.file_uploader("Choose a scanned document (image or PDF)", type=["png", "jpg", "jpeg", "pdf"])
+        # Sidebar form fields
+        st.sidebar.header('Enter New Data')
 
-        if scanned_file is not None:
-            extracted_text = ""
-            if scanned_file.type == "application/pdf":
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
-                    temp_pdf.write(scanned_file.getbuffer())
-                    temp_pdf_path = temp_pdf.name
-                extracted_text = extract_text_from_pdf(temp_pdf_path)
+        new_data = {}
+        for col in df.columns:
+            key = f"{col}_input"
+            if is_pure_text_column(df[col]):
+                unique_values = df[col].unique().tolist()
+                new_data[col] = st.sidebar.selectbox(
+                    f"Select or enter {col}",
+                    options=[""] + unique_values,
+                    key=key,
+                    index=unique_values.index(st.session_state.form_data.get(col, '')) if st.session_state.form_data.get(col, '') in unique_values else 0
+                )
             else:
-                image = Image.open(scanned_file)
-                st.image(image, caption='Uploaded Scanned Document', use_column_width=True)
-                extracted_text = extract_text_from_image(image)
+                new_data[col] = st.sidebar.text_input(
+                    f"{col}",
+                    key=key,
+                    value=st.session_state.form_data.get(col, '')
+                )
 
-            if extracted_text:
-                st.text("Extracted Text:")
-                st.write(extracted_text)
+        # Sidebar button to add data
+        if st.sidebar.button('Add Data'):
+            new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
+            new_data_df = pd.DataFrame([new_data])
+            
+            # Check for duplicate entries in the first column
+            first_col_name = df.columns[0]  # Assuming the first column should be unique
+            if new_data_df[first_col_name].values[0] in df[first_col_name].values:
+                st.error(f'The value "{new_data[first_col_name]}" already exists in the "{first_col_name}" column.')
+            else:
+                st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
+                st.session_state.df = clean_data(st.session_state.df)
+                st.success('Data added successfully!')
+                # Clear the form fields after successful data addition
+                for col in df.columns:
+                    key = f"{col}_input"
+                    if key in st.session_state:
+                        del st.session_state[key]
+                st.experimental_rerun()  # Refresh the sidebar and form fields
 
-                new_data_df = map_data_to_columns(extracted_text, st.session_state.df.columns)
-                st.write('New Data Extracted from Scanned Document:')
-                st.write(new_data_df)
-
-                if st.sidebar.button('Match and Fill Data'):
-                    st.session_state.df = match_and_fill_data(new_data_df, st.session_state.df)
-                    st.session_state.df = clean_data(st.session_state.df)
-                    st.sidebar.success('Data matched and filled successfully!')
-                    st.experimental_rerun()
-
+        # Create a download link for the updated data
         if st.button('Download Updated Data'):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as updated_file:
                 save_data(st.session_state.df, updated_file.name)
@@ -131,7 +122,9 @@ def main():
                         file_name="updated_data.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
+            st.success('Data downloaded successfully!')
 
+        # Filter and display data
         st.header('Retrieve Data')
         filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
         
@@ -139,12 +132,30 @@ def main():
         for col in filter_cols:
             filter_values[col] = st.text_input(f'Enter value to filter {col}:')
 
-        if filter_values:
-            filtered_df = df.copy()
+        filtered_df = df.copy()  # Initialize filtered_df before the condition
+
+        if filter_values: 
             for col, value in filter_values.items():
                 if value:
                     filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
-            st.write(filtered_df)
+            if filtered_df.empty:
+                st.warning('No matching records found.')
+            else:
+                st.write('Filtered Data:')
+                st.write(filtered_df)
+
+                # Download filtered data
+                buffer = io.BytesIO()
+                with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                    filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
+                buffer.seek(0)
+                st.download_button(
+                    label="Download Filtered Data",
+                    data=buffer,
+                    file_name="filtered_data.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+                st.success('Filtered data downloaded successfully!')
 
 if __name__ == "__main__":
     main()
