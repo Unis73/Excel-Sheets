@@ -20,22 +20,17 @@ def clean_data(df):
     return df
 
 def is_pure_text_column(series):
-    # Check if the series contains only text and no numbers
     return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
 
 def main():
-    st.title("Excel Data Management")
+    st.title("Data Entry and Retrieval Dashboard")
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
-        <style>
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
-        .css-18ni7ap.e8zbici2 {visibility: hidden;} /* Hide the Streamlit menu icon */
-        .css-1v0mbdj.e8zbici1 {visibility: visible;} /* Keep the settings icon */
-        </style>
-    """
+    <style>
+    #MainMenu li:nth-child(n+4) {display: none;}
+    </style>
+"""
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
     # Sidebar for file upload and data entry
@@ -102,14 +97,22 @@ def main():
                 # Check for duplicate entries in the first column
                 first_col_name = df.columns[0]  # Assuming the first column should be unique
                 if new_data_df[first_col_name].values[0] in df[first_col_name].values:
-                    st.sidebar.warning(f'The value "{new_data[first_col_name]}" already exists in the "{first_col_name}" column.')
+                    st.error(f'The value "{new_data[first_col_name]}" already exists in the "{first_col_name}" column.')
                 else:
                     st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
                     st.session_state.df = clean_data(st.session_state.df)
-                    st.sidebar.success('Data added successfully!')
+                    st.success('Data added successfully!')
                     # Clear form data
                     st.session_state.form_data = {col: '' for col in df.columns}
                     st.experimental_rerun()
+
+        with col2:
+            if st.sidebar.button('Clear All'):
+                # Clear the form fields without refreshing
+                st.session_state.form_data = {col: '' for col in df.columns}
+                for col in df.columns:
+                    st.session_state[f"{col}_input"] = ''
+                st.experimental_rerun()
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
@@ -122,7 +125,7 @@ def main():
                         file_name="updated_data.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
-            st.success('File downloaded successfully!')
+            st.success('Data downloaded successfully!')
 
         # Filter and display data
         st.header('Retrieve Data')
@@ -138,7 +141,11 @@ def main():
             for col, value in filter_values.items():
                 if value:
                     filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
-            st.write(filtered_df)
+            if filtered_df.empty:
+                st.warning('No matching records found.')
+            else:
+                st.write('Filtered Data:')
+                st.write(filtered_df)
 
         # Download filtered data
         if not filtered_df.empty:
@@ -152,6 +159,7 @@ def main():
                 file_name="filtered_data.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
+            st.success('Filtered data downloaded successfully!')
 
 if __name__ == "__main__":
     main()
