@@ -39,7 +39,7 @@ def main():
 
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
-    uploaded_file = st.sidebar.file_uploader("Choose an Excel file", type="xlsx")
+    uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
         # Check if a new file is uploaded
@@ -106,15 +106,10 @@ def main():
                     st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
                     st.session_state.df = clean_data(st.session_state.df)
                     st.success('Data added successfully!')
-                    # Clear form data
-                    st.session_state.form_data = {col: '' for col in df.columns}
-                    st.experimental_rerun()
 
         with col2:
             if st.sidebar.button('Clear All'):
-                # Clear the form fields without refreshing
-                st.session_state.form_data = {col: '' for col in df.columns}
-                for col in df.columns:
+                # Clear the form fields with refreshing
                     st.session_state[f"{col}_input"] = ''
                 st.experimental_rerun()
 
@@ -160,10 +155,10 @@ def main():
             st.download_button(
                 label="Download Filtered Data",
                 data=buffer,
-                file_name="filtered_data.xlsx",
+                file_name="Filtered_Data.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
-            st.success('Filtered data downloaded successfully!')
+            st.success('Downloaded successfully!')
 
 if __name__ == "__main__":
     main()
