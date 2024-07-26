@@ -108,6 +108,19 @@ def main():
                         del st.session_state[key]
                 st.experimental_rerun()  # Refresh the sidebar and form fields
 
+        # Create a download link for the updated data
+        if st.button('Download Updated Data'):
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as updated_file:
+                save_data(st.session_state.df, updated_file.name)
+                with open(updated_file.name, "rb") as file:
+                    st.download_button(
+                        label="Download Excel file",
+                        data=file,
+                        file_name="updated_data.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+            st.success('Data downloaded successfully!')
+
         # Filter and display data
         st.header('Retrieve Data')
         filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
@@ -141,19 +154,6 @@ def main():
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 ):
                     st.success('Filtered data downloaded successfully!')
-
-        # Create a download link for the updated data
-        if st.button('Download Updated Data'):
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as updated_file:
-                save_data(st.session_state.df, updated_file.name)
-                with open(updated_file.name, "rb") as file:
-                    st.download_button(
-                        label="Download Excel file",
-                        data=file,
-                        file_name="updated_data.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    )
-            st.success('Data downloaded successfully!')
 
 if __name__ == "__main__":
     main()
