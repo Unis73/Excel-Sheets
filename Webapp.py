@@ -39,6 +39,7 @@ def main():
 
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
+    st.sidebar.warning("Ensure the first column contains unique values.")
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
@@ -109,7 +110,8 @@ def main():
 
         with col2:
             if st.sidebar.button('Clear All'):
-                # Clear the form fields with refreshing
+                # Clear the form fields without refreshing
+                for col in df.columns:
                     st.session_state[f"{col}_input"] = ''
                 st.experimental_rerun()
 
@@ -155,7 +157,7 @@ def main():
             st.download_button(
                 label="Download Filtered Data",
                 data=buffer,
-                file_name="Filtered_Data.xlsx",
+                file_name="filtered_data.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
             st.success('Downloaded successfully!')
