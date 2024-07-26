@@ -27,10 +27,14 @@ def main():
 
     # Hide specific Streamlit style elements
     hide_streamlit_style = """
-    <style>
-    #MainMenu li:nth-child(n+4) {display: none;}
-    </style>
-"""
+        <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        .css-18ni7ap.e8zbici2 {visibility: hidden;} /* Hide the Streamlit menu icon */
+        .css-1v0mbdj.e8zbici1 {visibility: visible;} /* Keep the settings icon */
+        </style>
+    """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
     # Sidebar for file upload and data entry
