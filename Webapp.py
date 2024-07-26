@@ -129,7 +129,7 @@ def main():
         for col in filter_cols:
             filter_values[col] = st.text_input(f'Enter value to filter {col}:')
 
-        filtered_df = df.copy()  # Initialize filtered_df before the condition
+        filtered_df = df.copy()  # Initialize filtered_df after the condition
 
         if filter_values: 
             for col, value in filter_values.items():
