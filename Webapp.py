@@ -67,7 +67,6 @@ def main():
         if 'form_data' not in st.session_state:
             st.session_state.form_data = {col: '' for col in df.columns}
 
-        st.write('Current Data:')
         st.write(st.session_state.df)
 
         # Sidebar form fields
