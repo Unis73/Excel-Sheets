@@ -125,8 +125,6 @@ def main():
         st.header('Retrieve Data')
         filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
         
-        filter_values = {}
-
         if filter_cols:
             for col in filter_cols:
                 filter_value = st.text_input(f'Enter value to filter {col}:')
