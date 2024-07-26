@@ -39,8 +39,8 @@ def main():
 
     # Sidebar for file upload and data entry
     st.sidebar.title('Data Entry')
-    st.sidebar.warning("Ensure the first column contains unique values.")
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
+    st.sidebar.warning("Ensure the first column contains unique values.")
 
     if uploaded_file is not None:
         # Check if a new file is uploaded
@@ -154,7 +154,6 @@ def main():
                 file_name="filtered_data.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
-            st.success('Downloaded successfully!')
 
 if __name__ == "__main__":
     main()
