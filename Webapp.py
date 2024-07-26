@@ -67,7 +67,7 @@ def main():
         if 'form_data' not in st.session_state:
             st.session_state.form_data = {col: '' for col in df.columns}
 
-        # Sidebar form fields
+        # Sidebar form fields for adding new data
         st.sidebar.header('Enter New Data')
 
         new_data = {}
@@ -108,6 +108,61 @@ def main():
                         del st.session_state[key]
                 st.experimental_rerun()  # Refresh the sidebar and form fields
 
+        # Display and edit existing data
+        st.header('Edit Data')
+        edit_index = st.number_input('Select row to edit (index):', min_value=0, max_value=len(df)-1, step=1)
+        
+        if len(df) > 0:
+            row_to_edit = df.iloc[edit_index]
+            st.write(f'Editing row {edit_index}')
+            
+            edited_data = {}
+            for col in df.columns:
+                if is_pure_text_column(df[col]):
+                    edited_data[col] = st.text_input(f"{col}", value=row_to_edit[col])
+                else:
+                    edited_data[col] = st.text_input(f"{col}", value=row_to_edit[col])
+            
+            if st.button('Save Changes'):
+                df.iloc[edit_index] = edited_data
+                st.session_state.df = clean_data(df)
+                save_data(st.session_state.df, st.session_state.original_file_path)
+                st.success('Changes saved successfully!')
+
+        # Filter and display data
+        st.header('Retrieve Data')
+        filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
+        
+        filter_values = {}
+        filtered_df = df.copy()  # Initialize filtered_df before the condition
+
+        if filter_cols:
+            for col in filter_cols:
+                filter_value = st.text_input(f'Enter value to filter {col}:')
+                if filter_value:
+                    filter_values[col] = filter_value
+                    filtered_df = filtered_df[filtered_df[col].str.lower() == filter_value.lower()]
+
+            if filtered_df.empty:
+                st.warning('No matching records found.')
+            else:
+                st.write('Filtered Data:')
+                st.write(filtered_df)
+
+                # Download filtered data
+                buffer = io.BytesIO()
+                with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                    filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
+                buffer.seek(0)
+                
+                if st.download_button(
+                    label="Download Filtered Data",
+                    data=buffer,
+                    file_name="filtered_data.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ):
+                    st.success('Download successfull!')
+
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as updated_file:
@@ -120,39 +175,6 @@ def main():
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
             st.success('Data downloaded successfully!')
-
-        # Filter and display data
-        st.header('Retrieve Data')
-        filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
-        
-        filter_values = {}
-        for col in filter_cols:
-            filter_values[col] = st.text_input(f'Enter value to filter {col}:')
-
-        filtered_df = df.copy()  # Initialize filtered_df after the condition
-
-        if filter_values: 
-            for col, value in filter_values.items():
-                if value:
-                    filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
-            if filtered_df.empty:
-                st.warning('No matching records found.')
-            else:
-                st.write('Filtered Data:')
-                st.write(filtered_df)
-
-                # Download filtered data
-                buffer = io.BytesIO()
-                with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-                    filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
-                buffer.seek(0)
-                st.download_button(
-                    label="Download Filtered Data",
-                    data=buffer,
-                    file_name="filtered_data.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
-                st.success('Filtered data downloaded successfully!')
 
 if __name__ == "__main__":
     main()
