@@ -90,7 +90,8 @@ def main():
                 for col in df.columns:
                     key = f"{col}_input"
                     st.session_state[key] = ""
-
+                
+                # Trigger a rerun to refresh the form
                 st.experimental_rerun()
 
         if clear_button:
