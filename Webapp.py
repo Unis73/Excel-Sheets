@@ -36,10 +36,12 @@ def main():
                 temp_file.write(uploaded_file.getbuffer())
                 st.session_state.original_file_path = temp_file.name
 
-        if 'df' not in st.session_state:
+        if 'df' not in st.session_state or st.session_state.uploaded_file != uploaded_file:
             df = load_data(st.session_state.original_file_path)
             df = clean_data(df)
             st.session_state.df = df
+            st.session_state.uploaded_file = uploaded_file
+            st.experimental_rerun()  # Refresh the page when a new file is uploaded
         else:
             df = st.session_state.df
 
@@ -108,6 +110,7 @@ def main():
                         file_name="updated_data.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
+            st.success('File downloaded successfully!')
 
         # Filter and display data
         st.header('Retrieve Data')
@@ -123,12 +126,14 @@ def main():
                 if value:
                     filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
 
-            # Display filtered data
-            st.write('Filtered Data:')
-            st.write(filtered_df)
+            if filtered_df.empty:
+                st.warning('No data matches the filter criteria.')
+            else:
+                # Display filtered data
+                st.write('Filtered Data:')
+                st.write(filtered_df)
 
-            # Download filtered data
-            if not filtered_df.empty:
+                # Download filtered data
                 buffer = io.BytesIO()
                 with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                     filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
