@@ -126,8 +126,11 @@ def main():
         filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
         
         if filter_cols:
+            filter_values = {}
+            filtered_df = df.copy()  # Initialize filtered_df before filtering
+
             for col in filter_cols:
-                filter_value = st.text_input(f'Enter value to filter {col}:')
+                filter_value = st.text_input(f'Enter value to filter {col}:', key=col)
                 if filter_value:
                     filter_values[col] = filter_value
                     filtered_df = filtered_df[filtered_df[col].str.lower() == filter_value.lower()]
