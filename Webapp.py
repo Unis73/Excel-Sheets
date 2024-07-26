@@ -70,7 +70,7 @@ def main():
         st.write('Current Data:')
         st.write(st.session_state.df)
 
-        # Sidebar form fields
+        # Sidebar form fields for adding new data
         st.sidebar.header('Enter New Data')
 
         new_data = {}
@@ -106,8 +106,31 @@ def main():
                 st.success('Data added successfully!')
                 # Clear the form fields after successful data addition
                 for col in df.columns:
-                    st.session_state[f"{col}_input"] = ''
-                st.experimental_rerun()
+                    key = f"{col}_input"
+                    if key in st.session_state:
+                        del st.session_state[key]
+                st.experimental_rerun()  # Refresh the sidebar and form fields
+
+        # Display and edit existing data
+        st.header('Edit Data')
+        edit_index = st.number_input('Select row to edit (index):', min_value=0, max_value=len(df)-1, step=1)
+        
+        if len(df) > 0:
+            row_to_edit = df.iloc[edit_index]
+            st.write(f'Editing row {edit_index}')
+            
+            edited_data = {}
+            for col in df.columns:
+                if is_pure_text_column(df[col]):
+                    edited_data[col] = st.text_input(f"{col}", value=row_to_edit[col])
+                else:
+                    edited_data[col] = st.text_input(f"{col}", value=row_to_edit[col])
+            
+            if st.button('Save Changes'):
+                df.iloc[edit_index] = edited_data
+                st.session_state.df = clean_data(df)
+                save_data(st.session_state.df, st.session_state.original_file_path)
+                st.success('Changes saved successfully!')
 
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
