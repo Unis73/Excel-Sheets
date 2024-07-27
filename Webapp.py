@@ -106,9 +106,7 @@ def main():
                 # Clear the form fields after successful data addition
                 for col in df.columns:
                     key = f"{col}_input"
-                    if key in st.session_state:
-                        del st.session_state[key]
-                st.session_state.form_data = {col: '' for col in df.columns}  # Reset form data
+                    st.session_state[key] = ''
                 st.experimental_rerun()  # Refresh the sidebar and form fields
 
         # Delete button to clear session state and refresh app
