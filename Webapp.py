@@ -110,6 +110,12 @@ def main():
                         del st.session_state[key]
                 st.experimental_rerun()  # Refresh the sidebar and form fields
 
+        # Delete button to clear session state and refresh app
+        if st.sidebar.button('Clear All Data'):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.experimental_rerun()
+
         # Create a download link for the updated data
         if st.button('Download Updated Data'):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as updated_file:
