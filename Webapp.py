@@ -65,53 +65,102 @@ def main():
         if 'form_data' not in st.session_state:
             st.session_state.form_data = {col: '' for col in df.columns}
 
-        # Form fields for adding new data
-        st.header('Enter New Data')
+        # Create two columns
+        col1, col2 = st.columns(2)
 
-        new_data = {}
-        for col in df.columns:
-            key = f"{col}_input"
-            if is_pure_text_column(df[col]):
-                unique_values = df[col].unique().tolist()
-                new_data[col] = st.selectbox(
-                    f"Select or enter {col}",
-                    options=[""] + unique_values,
-                    key=key,
-                    index=unique_values.index(st.session_state.form_data.get(col, '')) if st.session_state.form_data.get(col, '') in unique_values else 0
-                )
-            else:
-                new_data[col] = st.text_input(
-                    f"{col}",
-                    key=key,
-                    value=st.session_state.form_data.get(col, '')
-                )
+        # Column 1: Enter new data
+        with col1:
+            st.header('Enter New Data')
+            new_data = {}
+            for col in df.columns:
+                key = f"{col}_input"
+                if is_pure_text_column(df[col]):
+                    unique_values = df[col].unique().tolist()
+                    new_data[col] = st.selectbox(
+                        f"Select or enter {col}",
+                        options=[""] + unique_values,
+                        key=key,
+                        index=unique_values.index(st.session_state.form_data.get(col, '')) if st.session_state.form_data.get(col, '') in unique_values else 0
+                    )
+                else:
+                    new_data[col] = st.text_input(
+                        f"{col}",
+                        key=key,
+                        value=st.session_state.form_data.get(col, '')
+                    )
 
-        # Button to add data
-        if st.button('Add Data'):
-            new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
-            new_data_df = pd.DataFrame([new_data])
-            
-            # Check for duplicate entries in the first column
-            first_col_name = df.columns[0]  # Assuming the first column should be unique
-            if new_data_df[first_col_name].values[0] in df[first_col_name].values:
-                st.error(f'The value "{new_data[first_col_name]}" already exists in the "{first_col_name}" column.')
-            else:
-                st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
-                st.session_state.df = clean_data(st.session_state.df)
-                # Save the updated data
-                save_data(st.session_state.df, st.session_state.original_file_path)
-                st.success('Data added successfully!')
-                # Clear the form fields after successful data addition
-                st.session_state.form_data = {col: '' for col in df.columns}
-                st.experimental_rerun()  # Refresh the form fields
+            # Button to add data
+            if st.button('Add Data'):
+                new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
+                new_data_df = pd.DataFrame([new_data])
+                
+                # Check for duplicate entries in the first column
+                first_col_name = df.columns[0]  # Assuming the first column should be unique
+                if new_data_df[first_col_name].values[0] in df[first_col_name].values:
+                    st.error(f'The value "{new_data[first_col_name]}" already exists in the "{first_col_name}" column.')
+                else:
+                    st.session_state.df = pd.concat([st.session_state.df, new_data_df], ignore_index=True)
+                    st.session_state.df = clean_data(st.session_state.df)
+                    # Save the updated data
+                    save_data(st.session_state.df, st.session_state.original_file_path)
+                    st.success('Data added successfully!')
+                    # Clear the form fields after successful data addition
+                    st.session_state.form_data = {col: '' for col in df.columns}
+                    st.experimental_rerun()  # Refresh the form fields
 
-        # Button to clear all data
-        if st.button('Clear All Data'):
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.experimental_rerun()
+            # Button to clear all data
+            if st.button('Clear All Data'):
+                for key in list(st.session_state.keys()):
+                    del st.session_state[key]
+                st.experimental_rerun()
 
-        # Create a download link for the updated data
+        # Column 2: Retrieve and filter data
+        with col2:
+            st.header('Retrieve Data')
+            filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
+
+            if filter_cols:
+                filter_values = {}
+                filtered_df = df.copy()  # Initialize filtered_df before filtering
+
+                # Show filter input fields based on selected columns
+                for col in filter_cols:
+                    filter_value = st.text_input(f'Enter value to filter {col}:', key=col)
+                    if filter_value:
+                        filter_values[col] = filter_value
+
+                # Apply filters and display filtered data
+                if filter_values:
+                    for col, value in filter_values.items():
+                        try:
+                            filtered_df[col] = filtered_df[col].astype(float)  # Try to convert column to float
+                            value = float(value)
+                            filtered_df = filtered_df[filtered_df[col] == value]
+                        except ValueError:
+                            filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
+
+                    if filtered_df.empty:
+                        st.warning('No matching records found.')
+                    else:
+                        st.write('Filtered Data:')
+                        st.write(filtered_df)
+
+                        # Download filtered data
+                        if st.button('Download Filtered Data'):
+                            buffer = io.BytesIO()
+                            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                                filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
+                            buffer.seek(0)
+                            
+                            st.download_button(
+                                label="Download Excel file",
+                                data=buffer,
+                                file_name="filtered_data.xlsx",
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            )
+                            st.success('Filtered data downloaded successfully!')
+
+        # Create a download link for the updated data at the bottom
         if st.button('Download Updated Data'):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as updated_file:
                 save_data(st.session_state.df, updated_file.name)
@@ -123,51 +172,6 @@ def main():
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
             st.success('Data downloaded successfully!')
-
-        # Filter and display data
-        st.header('Retrieve Data')
-        filter_cols = st.multiselect('Select columns for filter:', options=df.columns)
-
-        if filter_cols:
-            filter_values = {}
-            filtered_df = df.copy()  # Initialize filtered_df before filtering
-
-            # Show filter input fields based on selected columns
-            for col in filter_cols:
-                filter_value = st.text_input(f'Enter value to filter {col}:', key=col)
-                if filter_value:
-                    filter_values[col] = filter_value
-
-            # Apply filters and display filtered data
-            if filter_values:
-                for col, value in filter_values.items():
-                    try:
-                        filtered_df[col] = filtered_df[col].astype(float)  # Try to convert column to float
-                        value = float(value)
-                        filtered_df = filtered_df[filtered_df[col] == value]
-                    except ValueError:
-                        filtered_df = filtered_df[filtered_df[col].str.lower() == value.lower()]
-
-                if filtered_df.empty:
-                    st.warning('No matching records found.')
-                else:
-                    st.write('Filtered Data:')
-                    st.write(filtered_df)
-
-                    # Download filtered data
-                    if st.button('Download Filtered Data'):
-                        buffer = io.BytesIO()
-                        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-                            filtered_df.to_excel(writer, index=False, sheet_name='Filtered Data')
-                        buffer.seek(0)
-                        
-                        st.download_button(
-                            label="Download Excel file",
-                            data=buffer,
-                            file_name="filtered_data.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
-                        st.success('Filtered data downloaded successfully!')
 
 if __name__ == "__main__":
     main()
