@@ -37,9 +37,7 @@ def main():
     """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-    # Sidebar for file upload and data entry
-    st.sidebar.title('Data Entry')
-    st.sidebar.warning("Ensure the first column contains unique values.")
+    st.warning("Ensure the first column contains unique values.")
     uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
     if uploaded_file is not None:
@@ -67,29 +65,29 @@ def main():
         if 'form_data' not in st.session_state:
             st.session_state.form_data = {col: '' for col in df.columns}
 
-        # Sidebar form fields for adding new data
-        st.sidebar.header('Enter New Data')
+        # Form fields for adding new data
+        st.header('Enter New Data')
 
         new_data = {}
         for col in df.columns:
             key = f"{col}_input"
             if is_pure_text_column(df[col]):
                 unique_values = df[col].unique().tolist()
-                new_data[col] = st.sidebar.selectbox(
+                new_data[col] = st.selectbox(
                     f"Select or enter {col}",
                     options=[""] + unique_values,
                     key=key,
                     index=unique_values.index(st.session_state.form_data.get(col, '')) if st.session_state.form_data.get(col, '') in unique_values else 0
                 )
             else:
-                new_data[col] = st.sidebar.text_input(
+                new_data[col] = st.text_input(
                     f"{col}",
                     key=key,
                     value=st.session_state.form_data.get(col, '')
                 )
 
-        # Sidebar button to add data
-        if st.sidebar.button('Add Data'):
+        # Button to add data
+        if st.button('Add Data'):
             new_data = {col: new_data[col] if new_data[col] != '' else 'NA' for col in df.columns}
             new_data_df = pd.DataFrame([new_data])
             
@@ -105,10 +103,10 @@ def main():
                 st.success('Data added successfully!')
                 # Clear the form fields after successful data addition
                 st.session_state.form_data = {col: '' for col in df.columns}
-                st.experimental_rerun()  # Refresh the sidebar and form fields
+                st.experimental_rerun()  # Refresh the form fields
 
-        # Delete button to clear session state and refresh app
-        if st.sidebar.button('Clear All Data'):
+        # Button to clear all data
+        if st.button('Clear All Data'):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.experimental_rerun()
