@@ -20,10 +20,9 @@ def clean_data(df):
     return df
 
 def is_pure_text_column(series):
-    return series.apply(lambda x: isinstance(x, str) and not any char.isdigit() for char in x)).all()
+    return series.apply(lambda x: isinstance(x, str) and not any(char.isdigit() for char in x)).all()
 
 def main():
-    st.set_page_config(layout="wide")
     st.title("EXCEL FORMS")
 
     # Hide specific Streamlit style elements
@@ -66,8 +65,8 @@ def main():
         if 'form_data' not in st.session_state:
             st.session_state.form_data = {col: '' for col in df.columns}
 
-        # Create two columns with equal width
-        col1, col2 = st.columns([1, 1])
+        # Create two columns
+        col1, col2 = st.columns(2)
 
         # Column 1: Enter new data
         with col1:
